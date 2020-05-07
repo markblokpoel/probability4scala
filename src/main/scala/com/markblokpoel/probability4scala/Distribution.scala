@@ -23,7 +23,7 @@ case class Distribution[A](domain: Set[A], distribution:  Map[A, BigDecimal]) {
       val hs = List.tabulate((20 * p).intValue)(_ => "#").mkString
       println(
         value.toString +
-          " " * (maxStrLen - value.toString.length) +
+          " " * (maxStrLen - value.toString.length + 1) +
         f"$p%2.4f\t$hs")
     }
     )

@@ -82,30 +82,41 @@ object Demo extends App {
   }
 
   println("===L0===")
-  val li0 = ConditionalDistribution(rsaReferents, rsaSignals, lex2distrF(li0f))
+  val li0 =
+    ConditionalDistribution(rsaReferents, rsaSignals, lex2distrF(li0f))
 
   li0.table()
 
   println("")
-  println(li0 * rsaSignals.singleValueDistribution("s1"))
   pr("s1", li0).hist()
-//  pr("s2", li0).hist()
-//  pr("s3", li0).hist()
+  pr("s2", li0).hist()
+  pr("s3", li0).hist()
+
+  println("")
+
+  println(li0.prB("s1"))
 
   println("===S1===")
-  val sp1 = li0.bayes(li0.marginalDistributionB, rsaReferents.uniformDistribution)
+  val sp1 =
+    li0.bayes(rsaSignals.uniformDistribution)
   sp1.table()
   println(sp1.sum)
+  println("")
+  pr("r1", sp1).hist()
+  pr("r2", sp1).hist()
 
-//  println("===L1===")
-//  val li1 = sp1.bayes(rsaReferents.uniformDistribution, sp1.marginalDistributionA)
-//  li1.table()
-//  println(li1.sum)
-//
-//  println("")
-//  pr("s1", li1).hist()
-//  pr("s2", li1).hist()
-//  pr("s3", li1).hist()
+
+
+  println("===L1===")
+  val li1 =
+    sp1.bayes(rsaReferents.uniformDistribution)
+  li1.table()
+  println(li1.sum)
+
+  println("")
+  pr("s1", li1).hist()
+  pr("s2", li1).hist()
+  pr("s3", li1).hist()
 
 
 

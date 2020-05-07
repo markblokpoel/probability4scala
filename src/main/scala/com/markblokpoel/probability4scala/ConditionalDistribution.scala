@@ -7,23 +7,23 @@ import scala.reflect.ClassTag
 case class ConditionalDistribution[A, B](domain1: Set[A], domain2: Set[B], distribution: Map[(A, B), BigDecimal]) {
   def pr(conditional: Conditional[A, B]): BigDecimal = distribution((conditional.value, conditional.condition))
 
-  def pr(given: B): Distribution[A] = this * domain2.singleValueDistribution(given) / prB(given)
+  def pr(given: B): Distribution[A] = this * domain2.singleValueDistribution(given) / marginalLikelihood(given)
 
   // marginalization
   def prA(value: A): BigDecimal = domain2.foldLeft(0.toBigDecimal) {
     (acc: BigDecimal, conditional: B) => acc + pr(value | conditional)
   }
 
-  def prB(conditional: B): BigDecimal = domain1.foldLeft(0.toBigDecimal) {
+  def marginalLikelihood(conditional: B): BigDecimal = domain1.foldLeft(0.toBigDecimal) {
     (acc: BigDecimal, value: A) => acc + pr(value | conditional)
   }
 
   // marginal distribution
-  def marginalDistributionA: Distribution[A] =
+  def marginalDistribution: Distribution[A] =
     Distribution(domain1, domain1.map(value => value -> prA(value)).toMap)
 
-  def marginalDistributionB: Distribution[B] =
-    Distribution(domain2, domain2.map(value => value -> prB(value)).toMap)
+  def marginalLikelihood: Distribution[B] =
+    Distribution(domain2, domain2.map(value => value -> marginalLikelihood(value)).toMap)
 
   // posterior distribution
   def *(prior: Distribution[B]): Distribution[A] = Distribution(domain1,
@@ -37,10 +37,10 @@ case class ConditionalDistribution[A, B](domain1: Set[A], domain2: Set[B], distr
     domain2.map(condition => pr(value | condition) * prior.pr(condition)).sum
 
   // Bayes' rule
-  def bayes(domain2Prior: Distribution[B], domain1Prior: Distribution[A]): ConditionalDistribution[B, A] = {
+  def bayes(prior: Distribution[B]): ConditionalDistribution[B, A] = {
     val newDistribution: Set[((B, A), BigDecimal)] = domain2.flatMap(condition => {
       domain1.map(value => {
-        (condition, value) -> pr(value | condition) * domain2Prior.pr(condition) / domain1Prior.pr(value)
+        (condition, value) -> pr(value | condition) * prior.pr(condition) / marginalLikelihood(condition)
       })
     })
     ConditionalDistribution(domain2, domain1, newDistribution.toMap)
