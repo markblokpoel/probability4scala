@@ -109,7 +109,7 @@ case class ConditionalDistribution[A, B](domainV1: Set[A], domainV2: Set[B], dis
     domainV1.foreach { d1 =>
       println(
         d1.toString + " " * (maxStrLen1 - d1.toString.length + 1) +
-          domainV2.toVector.map(d2 => f"${pr(d1 | d2)}%2.4f" + " " * (maxStrLen2 - f"${pr(d1 | d2)}%2.4f".length + 1)).mkString
+          domainV2.toVector.map(d2 => f"${pr(d1 | d2)}%1.4f" + " " * (maxStrLen2 - f"${pr(d1 | d2)}%1.4f".length + 1)).mkString
       )
     }
   }

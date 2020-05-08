@@ -84,7 +84,7 @@ case class Distribution[A](domain: Set[A], distribution:  Map[A, BigDecimal]) {
       println(
         value.toString +
           " " * (maxStrLen - value.toString.length + 1) +
-        f"$p%2.4f\t$hs")
+        f"$p%1.4f\t$hs")
     }
     )
   }
