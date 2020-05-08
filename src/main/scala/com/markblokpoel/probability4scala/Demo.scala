@@ -41,9 +41,9 @@ object Demo extends App {
 
   val cdistr = ConditionalDistribution(signals, referents.toSet, cd)
 
-  cdistr.table()
+  cdistr.cpt()
 
-  val p3 = prA("monkey", cdistr) // this will marginalize over all possible conditional val
+  val p3 = prV1("monkey", cdistr) // this will marginalize over all possible conditional val
   println(s"pr(monkey) = sum_r pr(monkey|r) = $p3")
   val posterior = cdistr * referentPriors // this will conditionalize over referent priors
   posterior.hist()
@@ -85,7 +85,7 @@ object Demo extends App {
   val li0 =
     ConditionalDistribution(rsaReferents, rsaSignals, lex2distrF(li0f))
 
-  li0.table()
+  li0.cpt()
 
   println("")
   pr("s1", li0).hist()
@@ -94,12 +94,12 @@ object Demo extends App {
 
   println("")
 
-  println(li0.prB("s1"))
+  println(li0.prV2("s1"))
 
   println("===S1===")
   val sp1 =
     li0.bayes(rsaSignals.uniformDistribution)
-  sp1.table()
+  sp1.cpt()
   println(sp1.sum)
   println("")
   pr("r1", sp1).hist()
@@ -110,7 +110,7 @@ object Demo extends App {
   println("===L1===")
   val li1 =
     sp1.bayes(rsaReferents.uniformDistribution)
-  li1.table()
+  li1.cpt()
   println(li1.sum)
 
   println("")
@@ -119,7 +119,7 @@ object Demo extends App {
   pr("s3", li1).hist()
 
 
-
+  println("s1" | rsaReferents.uniformDistribution)
 
 
 }

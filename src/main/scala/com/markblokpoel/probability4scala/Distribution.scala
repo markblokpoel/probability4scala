@@ -1,6 +1,7 @@
 package com.markblokpoel.probability4scala
 
-import scala.reflect.{ClassManifest, ClassTag}
+import scala.reflect.ClassTag
+import scala.util.Random
 
 case class Distribution[A](domain: Set[A], distribution:  Map[A, BigDecimal]) {
 
@@ -13,7 +14,26 @@ case class Distribution[A](domain: Set[A], distribution:  Map[A, BigDecimal]) {
     Distribution(domain, distribution.view.mapValues(_ / scalar).toMap)
   }
 
+  /** Draws a sample from the distribution, proportionate to the probabilities.
+   *
+   * @return
+   */
+//  def sample: A = {
+//    val pt = Random.nextDouble()
+//
+//    @scala.annotation.tailrec
+//    def sample(acc: BigDecimal,
+//               domain: Iterable[A]): A = {
+//      if (acc <= pt && pt < acc + distribution.head) domain.head
+//      else sample(acc + distribution.head, domain.tail, distribution.tail)
+//    }
+//
+//    sample(0.0, distribution.keys)
+//  }
+
   def sum: BigDecimal = distribution.values.sum
+
+  override def toString: String = distribution.mkString("{", ", ", "}")
 
   def hist(): Unit = {
     val maxStrLen = domain.map(_.toString.length).max

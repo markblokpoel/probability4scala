@@ -12,7 +12,9 @@ object Implicits {
   }
 
   implicit class ImplConditional[A](value: A) {
-    def |[B](condition: B): Conditional[A, B] = Conditional(value, condition)
+    def |[B](condition: B): Conditional1[A, B] = Conditional1(value, condition)
+
+    def |[B](condition: Distribution[B]): Conditional2[A, B] = Conditional2(value, condition)
   }
 
   implicit class ImplDouble(double: Double) {
