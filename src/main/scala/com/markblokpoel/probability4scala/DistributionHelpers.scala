@@ -1,6 +1,7 @@
 package com.markblokpoel.probability4scala
 
-object Helpers {
+/** Helpers for [[Distribution]] and [[ConditionalDistribution]]. */
+object DistributionHelpers {
   def pr[A](value: A, distribution: Distribution[A]): BigDecimal = distribution.pr(value)
 
   def pr[A, B](conditional: Conditional1[A, B], distribution: ConditionalDistribution[A, B]): BigDecimal =

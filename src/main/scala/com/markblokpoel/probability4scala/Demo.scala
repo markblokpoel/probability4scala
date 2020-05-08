@@ -3,7 +3,7 @@ package com.markblokpoel.probability4scala
 object Demo extends App {
 
   import com.markblokpoel.probability4scala.Implicits._
-  import com.markblokpoel.probability4scala.Helpers._
+  import com.markblokpoel.probability4scala.DistributionHelpers._
 
   case class Ref(label: String)
 
