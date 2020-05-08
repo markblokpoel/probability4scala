@@ -20,6 +20,8 @@ object Demo extends App {
   val referentPriors = Distribution(referents, customDistribution)
   referentPriors.hist()
 
+  println(referentPriors.sample(10).mkString("\n"))
+
   val p2 = pr(Ref("r2"), referentPriors)
   println(s"pr(r2)=$p2")
 

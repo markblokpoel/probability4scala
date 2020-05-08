@@ -1,5 +1,7 @@
 package com.markblokpoel.probability4scala
 
+import com.markblokpoel.probability4scala.datastructures.ProbabilityTree
+
 import scala.reflect.ClassTag
 import scala.util.Random
 
@@ -14,22 +16,23 @@ case class Distribution[A](domain: Set[A], distribution:  Map[A, BigDecimal]) {
     Distribution(domain, distribution.view.mapValues(_ / scalar).toMap)
   }
 
+  lazy private val pTree = ProbabilityTree(this)
+
   /** Draws a sample from the distribution, proportionate to the probabilities.
    *
    * @return
    */
-//  def sample: A = {
-//    val pt = Random.nextDouble()
-//
-//    @scala.annotation.tailrec
-//    def sample(acc: BigDecimal,
-//               domain: Iterable[A]): A = {
-//      if (acc <= pt && pt < acc + distribution.head) domain.head
-//      else sample(acc + distribution.head, domain.tail, distribution.tail)
-//    }
-//
-//    sample(0.0, distribution.keys)
-//  }
+  def sample: A = pTree(Random.nextDouble())
+
+  def sample(n: Int): Iterator[A] = new Iterator[A]() {
+    private var sampleCount = 0
+    override def hasNext: Boolean = sampleCount < n
+
+    override def next(): A = {
+      sampleCount += 1
+      sample
+    }
+  }
 
   def sum: BigDecimal = distribution.values.sum
 
