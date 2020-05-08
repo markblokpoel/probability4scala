@@ -1,9 +1,3 @@
-# Lanag simulation framework - Core
+# Probability4Scala
 
-##Requirements
-Install Scala and Apache Spark, then import the library in via sbt by adding the following
-line to your `build.sbt` file:
-
-```
-libraryDependencies += "com.markblokpoel" %% "lanag-core" % "0.3.8"
-```
+A library based on Java's BigDecimal for high accuracy probability computation.
