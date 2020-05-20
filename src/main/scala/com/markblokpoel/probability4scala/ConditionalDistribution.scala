@@ -73,6 +73,24 @@ case class ConditionalDistribution[A, B](domainV1: Set[A], domainV2: Set[B], dis
   )
 
   /**
+   * Scales the conditional distribution according to the scalar: pr(domainV1 | domainV2) * scalar
+   *
+   * This may de-normalize the distribution.
+   *
+   * @param scalar
+   * @return The scaled distribution.
+   */
+  def *(scalar: BigDecimal): ConditionalDistribution[A, B] =
+    ConditionalDistribution(domainV1, domainV2, distribution.mapValues(_ * scalar))
+
+  def +(other: ConditionalDistribution[A, B]): ConditionalDistribution[A, B] = {
+    val sumDistribution = (for(value1 <- domainV1; value2 <- domainV2) yield {
+      (value1, value2) -> (distribution((value1, value2)) + other.distribution((value1, value2)))
+    }).toMap
+    ConditionalDistribution(domainV1, domainV2, sumDistribution)
+  }
+
+  /**
    * Computes the posterior probability given a value for {{{V1}}} and a prior distribution over {{{V2}}}
    * via conditionalization. Recommended usage: {{{pr(v1 | Distribution(V2))}}}
    * @param conditional
