@@ -96,6 +96,18 @@ case class ConditionalDistribution[A, B](domainV1: Set[A], domainV2: Set[B], dis
     ConditionalDistribution(domainV2, domainV1, newDistribution.toMap)
   }
 
+  /** Returns the Shannon information conditional entropy of this distribution.
+   *
+   * For distributions that deviate from probability assumptions (i.e., the sum of the values
+   * equals 1.0), Shannon information entropy is ill-defined.
+   *
+   * @return Conditional entropy of the distribution
+   */
+//  def entropy: Double =
+//    (for(a <- domainV1; b <- domainV2) yield {
+//      pr(a | b).doubleValue * math.log((pr(a | b) / prV2(b)).doubleValue)
+//    }).sum
+
   /**
    * @return The sum of the probabilities, i.e., the probability mass.
    */

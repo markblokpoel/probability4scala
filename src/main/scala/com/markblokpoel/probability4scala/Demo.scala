@@ -12,6 +12,7 @@ object Demo extends App {
   signalPriors.hist() // print histogram
   val p1 = pr("monkey", signalPriors) // request probability
   println(p1)
+  println("H(signalPriors) = " + signalPriors.entropy)
 
   // create custom distribution
   val (r1, r2, r3) = (Ref("r1"), Ref("r2"), Ref("r3"))
@@ -19,6 +20,7 @@ object Demo extends App {
   val customDistribution = Vector(.1, .4, .5)
   val referentPriors = Distribution(referents, customDistribution)
   referentPriors.hist()
+  println("H(referentPriors) = " + referentPriors.entropy)
 
   println(referentPriors.sample(10).mkString("\n"))
 
@@ -121,7 +123,6 @@ object Demo extends App {
   pr("s3", li1).hist()
 
 
-  println("s1" | rsaReferents.uniformDistribution)
-
+  println(li1.entropy)
 
 }

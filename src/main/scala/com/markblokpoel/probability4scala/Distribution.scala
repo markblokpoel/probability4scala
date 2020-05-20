@@ -1,18 +1,21 @@
 package com.markblokpoel.probability4scala
 
 import com.markblokpoel.probability4scala.datastructures.ProbabilityTree
+import com.markblokpoel.probability4scala.Implicits._
 
+import scala.math.exp
 import scala.reflect.ClassTag
 import scala.util.Random
 
 /**
  * Implements a generic probability distribution. The probabilities are represented by BigDecimal for increased
  * accuracy.
- * @param domain The set of values that span this distribution.
+ *
+ * @param domain       The set of values that span this distribution.
  * @param distribution The probabilities for each value in the domain.
  * @tparam A The type of the domain.
  */
-case class Distribution[A](domain: Set[A], distribution:  Map[A, BigDecimal]) {
+case class Distribution[A](domain: Set[A], distribution: Map[A, BigDecimal]) {
 
   /**
    * @param value A value within the domain.
@@ -25,6 +28,7 @@ case class Distribution[A](domain: Set[A], distribution:  Map[A, BigDecimal]) {
    * Scales the distribution according to the scalar: pr(domain) * scalar
    *
    * This may de-normalize the distribution.
+   *
    * @param scalar
    * @return The scaled distribution.
    */
@@ -34,6 +38,7 @@ case class Distribution[A](domain: Set[A], distribution:  Map[A, BigDecimal]) {
    * Inversely scales the distribution according to a scalar: pr(domain) * 1 / scalar = pr(domain) / scalar
    *
    * This may de-normalize the distribution.
+   *
    * @param scalar A scalar bigger than 0.
    * @return The scaled distribution.
    */
@@ -48,23 +53,77 @@ case class Distribution[A](domain: Set[A], distribution:  Map[A, BigDecimal]) {
 
   /**
    * Draws a sample from the distribution, proportionate to the probabilities.
+   *
    * @return A sample
    */
   def sample: A = pTree(Random.nextDouble())
 
   /**
    * Returns an iterator containing {{{n}}} samples.
+   *
    * @param n
    * @return
    */
   def sample(n: Int): Iterator[A] = new Iterator[A]() {
     private var sampleCount = 0
+
     override def hasNext: Boolean = sampleCount < n
 
     override def next(): A = {
       sampleCount += 1
       sample
     }
+  }
+
+  /** Returns the value in the domain with the maximum probability.
+   * If multiple maxima exist, it returns one of those at random.
+   *
+   * @return Most probable value in the domain
+   */
+  @throws[IndexOutOfBoundsException]
+  def argMax: A = {
+    val maxValue = distribution.values.max
+    val maxValSet = distribution.filter(_._2 == maxValue).keys.toList
+    // If one or more maxima exist return random
+    maxValSet(Random.nextInt(maxValSet.length))
+  }
+
+  /**
+   * Returns a value in the domain according to soft argMax with parameter beta. If beta -> Inf,
+   * this function is equivalent to argMax.
+   *
+   * @param beta The beta parameter, >=0. Soft argmax is ill-defined for negative beta values.
+   * @return A value in the domain of distribution
+   * @see See this Wikipedia page for a mathmatical definition of soft argmax
+   *      [[https://en.wikipedia.org/wiki/Softmax_function]].
+   */
+  @throws[IndexOutOfBoundsException]
+  def softArgMax(beta: Double): A = {
+    val softenedDistributionMap = distribution.mapValues(
+      p => exp(beta * p.doubleValue)
+    )
+
+    if (softenedDistributionMap.values.exists(_.isNaN))
+      argMax
+    else {
+      val softenedDistributionSum = softenedDistributionMap.values.sum
+      val softenedDistribution =
+        Distribution(domain, softenedDistributionMap.mapValues(d => (d / softenedDistributionSum).toBigDecimal))
+      softenedDistribution.sample
+    }
+  }
+
+  /** Returns the Shannon information entropy of this distribution.
+   *
+   * For distributions that deviate from probability assumptions (i.e., the sum of the values
+   * equals 1.0), Shannon information entropy is ill-defined.
+   *
+   * @return Entropy of the distribution
+   */
+  def entropy: Double = {
+    distribution.values.foldLeft(0.0)((e: Double, p: BigDecimal) =>
+        e - (if (p > 0) p.doubleValue * math.log(p.doubleValue) / math.log(2) else 0)
+    )
   }
 
   /**
@@ -84,7 +143,7 @@ case class Distribution[A](domain: Set[A], distribution:  Map[A, BigDecimal]) {
       println(
         value.toString +
           " " * (maxStrLen - value.toString.length + 1) +
-        f"$p%1.4f\t$hs")
+          f"$p%1.4f\t$hs")
     }
     )
   }
