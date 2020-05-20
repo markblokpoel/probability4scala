@@ -118,7 +118,7 @@ case class ConditionalDistribution[A, B](domainV1: Set[A], domainV2: Set[B], dis
 /** Factory for [[ConditionalDistribution]]. */
 case object ConditionalDistribution {
   def apply[A, B, X: ClassTag](domain1: Set[A], domain2: Set[B], distribution: Map[(A, B), Double]): ConditionalDistribution[A, B] = {
-    val bdd = distribution.view.mapValues(BigDecimal(_)).toMap
+    val bdd = distribution.mapValues(BigDecimal(_))
     ConditionalDistribution[A, B](domain1, domain2, bdd)
   }
 }

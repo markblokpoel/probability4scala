@@ -28,7 +28,7 @@ case class Distribution[A](domain: Set[A], distribution:  Map[A, BigDecimal]) {
    * @param scalar
    * @return The scaled distribution.
    */
-  def *(scalar: BigDecimal): Distribution[A] = Distribution(domain, distribution.view.mapValues(_ * scalar).toMap)
+  def *(scalar: BigDecimal): Distribution[A] = Distribution(domain, distribution.mapValues(_ * scalar))
 
   /**
    * Inversely scales the distribution according to a scalar: pr(domain) * 1 / scalar = pr(domain) / scalar
@@ -40,7 +40,7 @@ case class Distribution[A](domain: Set[A], distribution:  Map[A, BigDecimal]) {
   @throws[IllegalArgumentException]
   def /(scalar: BigDecimal): Distribution[A] = {
     require(scalar > 0, "Cannot divide by 0.")
-    Distribution(domain, distribution.view.mapValues(_ / scalar).toMap)
+    Distribution(domain, distribution.mapValues(_ / scalar))
   }
 
   /** Efficient representation for sampling. Compute when needed and only once. */
@@ -99,5 +99,5 @@ case object Distribution {
     Distribution(domain.toSet, (domain zip distribution).toMap)
 
   def apply[A, X: ClassTag, Y: ClassTag](domain: Set[A], distribution: Map[A, Double]): Distribution[A] =
-    Distribution(domain, distribution.view.mapValues(BigDecimal(_)).toMap)
+    Distribution(domain, distribution.mapValues(BigDecimal(_)))
 }

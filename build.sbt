@@ -5,10 +5,10 @@ updateOptions := updateOptions.value.withCachedResolution(false)
 
 lazy val commonSettings = Seq(
   name := repo,
-  scalaVersion := "2.13.2",
+  scalaVersion := "2.12.8",
   organization := s"com.markblokpoel",
   description := "This is an implementation of the core API for the Lanag agent-based simulation framework.",
-  crossScalaVersions := Seq("2.12.8","2.12.9","2.12.10","2.13.2"),
+  crossScalaVersions := Seq("2.12.8","2.12.9","2.12.10"),
   crossVersion := CrossVersion.binary,
 //  resolvers ++= Seq(
 //    "jitpack" at "https://jitpack.io"
