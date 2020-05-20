@@ -122,7 +122,4 @@ object Demo extends App {
   pr("s2", li1).hist()
   pr("s3", li1).hist()
 
-
-  println(li1.entropy)
-
 }
