@@ -7,7 +7,11 @@ object DistributionHelpers {
   def pr[A, B](conditional: Conditional1[A, B], distribution: ConditionalDistribution[A, B]): BigDecimal =
     distribution.pr(conditional)
 
-  def prV1[A, B](value: A, distribution: ConditionalDistribution[A, B]): BigDecimal = distribution.prV1(value)
+  def prValue[A, B](value: A, distribution: ConditionalDistribution[A, B]): BigDecimal = distribution.prValue(value)
 
   def pr[A, B](given: B, distribution: ConditionalDistribution[A, B]): Distribution[A] = distribution.pr(given)
+
+  def exp[A](distribution: Distribution[A]): Distribution[A] = distribution.exp
+
+  def log[A](distribution: Distribution[A]): Distribution[A] = distribution.log
 }

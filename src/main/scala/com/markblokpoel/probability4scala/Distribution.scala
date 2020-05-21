@@ -1,9 +1,10 @@
 package com.markblokpoel.probability4scala
 
+import com.markblokpoel.probability4scala.Demo.sd
+import com.markblokpoel.probability4scala.DistributionHelpers.{exp, log}
 import com.markblokpoel.probability4scala.datastructures.ProbabilityTree
 import com.markblokpoel.probability4scala.Implicits._
 
-import scala.math.exp
 import scala.reflect.ClassTag
 import scala.util.Random
 
@@ -34,6 +35,18 @@ case class Distribution[A](domain: Set[A], distribution: Map[A, BigDecimal]) {
    */
   def *(scalar: BigDecimal): Distribution[A] = Distribution(domain, distribution.mapValues(_ * scalar))
 
+  def +(other: Distribution[A]): Distribution[A] = {
+    require(domain == other.domain, "addition for distributions requires the same domains")
+
+    Distribution(domain, domain.map(key => (key, distribution(key) + other.distribution(key))).toMap)
+  }
+
+  def -(other: Distribution[A]): Distribution[A] = {
+    require(domain == other.domain, "subtraction for distributions requires the same domains")
+
+    Distribution(domain, domain.map(key => (key, distribution(key) - other.distribution(key))).toMap)
+  }
+
   /**
    * Inversely scales the distribution according to a scalar: pr(domain) * 1 / scalar = pr(domain) / scalar
    *
@@ -56,7 +69,7 @@ case class Distribution[A](domain: Set[A], distribution: Map[A, BigDecimal]) {
    *
    * @return A sample
    */
-  def sample: A = pTree(Random.nextDouble())
+  def sample: A = pTree(Random.nextDouble() * sum)
 
   /**
    * Returns an iterator containing {{{n}}} samples.
@@ -75,6 +88,10 @@ case class Distribution[A](domain: Set[A], distribution: Map[A, BigDecimal]) {
     }
   }
 
+  def isNormalized: Boolean = sum == 1
+
+  def accuracy: BigDecimal = 1.0.toBigDecimal - sum
+
   /** Returns the value in the domain with the maximum probability.
    * If multiple maxima exist, it returns one of those at random.
    *
@@ -88,30 +105,19 @@ case class Distribution[A](domain: Set[A], distribution: Map[A, BigDecimal]) {
     maxValSet(Random.nextInt(maxValSet.length))
   }
 
+  def exp: Distribution[A] = Distribution(domain, distribution.mapValues(bd => math.exp(bd.doubleValue).toBigDecimal))
+
+  def log: Distribution[A] = Distribution(domain, distribution.mapValues(bd => math.log(bd.doubleValue).toBigDecimal))
+
   /**
-   * Returns a value in the domain according to soft argMax with parameter beta. If beta -> Inf,
-   * this function is equivalent to argMax.
+   * Returns the softmaxed distribution
    *
-   * @param beta The beta parameter, >=0. Soft argmax is ill-defined for negative beta values.
+   * @param beta The beta parameter
    * @return A value in the domain of distribution
    * @see See this Wikipedia page for a mathmatical definition of soft argmax
    *      [[https://en.wikipedia.org/wiki/Softmax_function]].
    */
-  @throws[IndexOutOfBoundsException]
-  def softArgMax(beta: Double): A = {
-    val softenedDistributionMap = distribution.mapValues(
-      p => exp(beta * p.doubleValue)
-    )
-
-    if (softenedDistributionMap.values.exists(_.isNaN))
-      argMax
-    else {
-      val softenedDistributionSum = softenedDistributionMap.values.sum
-      val softenedDistribution =
-        Distribution(domain, softenedDistributionMap.mapValues(d => (d / softenedDistributionSum).toBigDecimal))
-      softenedDistribution.sample
-    }
-  }
+  def softArgMax(beta: Double): Distribution[A] = (this.log * beta).exp / (this.log * beta).exp.sum
 
   /** Returns the Shannon information entropy of this distribution.
    *

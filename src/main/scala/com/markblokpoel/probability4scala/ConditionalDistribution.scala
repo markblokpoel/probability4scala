@@ -27,14 +27,14 @@ case class ConditionalDistribution[A, B](domainV1: Set[A], domainV2: Set[B], dis
    * @param conditional
    * @return
    */
-  def pr(conditional: B): Distribution[A] = this * domainV2.singleValueDistribution(conditional) / prV2(conditional)
+  def pr(conditional: B): Distribution[A] = this * domainV2.singleValueDistribution(conditional) / prConditional(conditional)
 
   /**
    * Computes the probability for {{{V1=value}}} by marginalizing over all possible values of {{{V2}}}.
    * @param value
    * @return
    */
-  def prV1(value: A): BigDecimal = domainV2.foldLeft(0.toBigDecimal) {
+  def prValue(value: A): BigDecimal = domainV2.foldLeft(0.toBigDecimal) {
     (acc: BigDecimal, conditional: B) => acc + pr(value | conditional)
   }
 
@@ -43,7 +43,7 @@ case class ConditionalDistribution[A, B](domainV1: Set[A], domainV2: Set[B], dis
    * @param conditional
    * @return
    */
-  def prV2(conditional: B): BigDecimal = domainV1.foldLeft(0.toBigDecimal) {
+  def prConditional(conditional: B): BigDecimal = domainV1.foldLeft(0.toBigDecimal) {
     (acc: BigDecimal, value: A) => acc + pr(value | conditional)
   }
 
@@ -52,14 +52,14 @@ case class ConditionalDistribution[A, B](domainV1: Set[A], domainV2: Set[B], dis
    * @return
    */
   def marginalDistribution: Distribution[A] =
-    Distribution(domainV1, domainV1.map(value => value -> prV1(value)).toMap)
+    Distribution(domainV1, domainV1.map(value => value -> prValue(value)).toMap)
 
   /**
    * Computes the marginal probability for all values of {{{V2}}} by marginalizing over all possible values of {{{V1}}}.
    * @return
    */
   def marginalLikelihood: Distribution[B] =
-    Distribution(domainV2, domainV2.map(value => value -> prV2(value)).toMap)
+    Distribution(domainV2, domainV2.map(value => value -> prConditional(value)).toMap)
 
   /**
    * Computes the de-normalized posterior distribution of {{{V1}}} given a priors distribution over {{{V2}}}.
@@ -71,6 +71,24 @@ case class ConditionalDistribution[A, B](domainV1: Set[A], domainV2: Set[B], dis
       value1 -> domainV2.map((value2: B) => pr(value1 | value2) * prior.pr(value2)).sum
     ).toMap
   )
+
+  def --(other: Distribution[A]): ConditionalDistribution[A, B] = {
+    require(domainV1 == other.domain, "subtraction for distributions requires the same domains")
+
+    val newDistribution = (for(d1 <- domainV1; d2 <- domainV2) yield
+      ((d1, d2) -> (distribution((d1, d2)) - other.distribution(d1)))).toMap
+
+    ConditionalDistribution(domainV1, domainV2, newDistribution)
+  }
+
+  def ---(other: Distribution[B]): ConditionalDistribution[A, B] = {
+    require(domainV2 == other.domain, "subtraction for distributions requires the same domains")
+
+    val newDistribution = (for(d1 <- domainV1; d2 <- domainV2) yield
+      ((d1, d2) -> (distribution((d1, d2)) - other.distribution(d2)))).toMap
+
+    ConditionalDistribution(domainV1, domainV2, newDistribution)
+  }
 
   /**
    * Scales the conditional distribution according to the scalar: pr(domainV1 | domainV2) * scalar
@@ -108,11 +126,15 @@ case class ConditionalDistribution[A, B](domainV1: Set[A], domainV2: Set[B], dis
   def bayes(prior: Distribution[B]): ConditionalDistribution[B, A] = {
     val newDistribution: Set[((B, A), BigDecimal)] = domainV2.flatMap(condition => {
       domainV1.map(value => {
-        (condition, value) -> pr(value | condition) * prior.pr(condition) / prV2(condition)
+        (condition, value) -> pr(value | condition) * prior.pr(condition) / prConditional(condition)
       })
     })
     ConditionalDistribution(domainV2, domainV1, newDistribution.toMap)
   }
+
+  def isNormalized: Boolean = distribution.values.sum == 1
+
+  def accuracy: BigDecimal = 1.0.toBigDecimal - distribution.values.sum
 
   /** Returns the Shannon information conditional entropy of this distribution.
    *
