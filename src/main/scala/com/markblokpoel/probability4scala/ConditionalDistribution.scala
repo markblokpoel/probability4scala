@@ -101,6 +101,20 @@ case class ConditionalDistribution[A, B](domainV1: Set[A], domainV2: Set[B], dis
   def *(scalar: BigDecimal): ConditionalDistribution[A, B] =
     ConditionalDistribution(domainV1, domainV2, distribution.mapValues(_ * scalar))
 
+  /**
+   * Inversely scales the distribution according to a scalar: pr(domain) * 1 / scalar = pr(domain) / scalar
+   *
+   * This may de-normalize the distribution.
+   *
+   * @param scalar A scalar bigger than 0.
+   * @return The scaled distribution.
+   */
+  @throws[IllegalArgumentException]
+  def /(scalar: BigDecimal): ConditionalDistribution[A, B] = {
+    require(scalar != 0, "Cannot divide by 0.")
+    ConditionalDistribution(domainV1, domainV2, distribution.mapValues(_ / scalar))
+  }
+
   def +(other: ConditionalDistribution[A, B]): ConditionalDistribution[A, B] = {
     val sumDistribution = (for(value1 <- domainV1; value2 <- domainV2) yield {
       (value1, value2) -> (distribution((value1, value2)) + other.distribution((value1, value2)))
@@ -152,6 +166,20 @@ case class ConditionalDistribution[A, B](domainV1: Set[A], domainV2: Set[B], dis
    * @return The sum of the probabilities, i.e., the probability mass.
    */
   def sum: BigDecimal = distribution.values.sum
+
+  def exp: ConditionalDistribution[A, B] = ConditionalDistribution(domainV1, domainV2, distribution.mapValues(bd => math.exp(bd.doubleValue).toBigDecimal))
+
+  def log: ConditionalDistribution[A, B] = ConditionalDistribution(domainV1, domainV2, distribution.mapValues(bd => math.log(bd.doubleValue).toBigDecimal))
+
+  /**
+   * Returns the softmaxed distribution
+   *
+   * @param beta The beta parameter
+   * @return A value in the domain of distribution
+   * @see See this Wikipedia page for a mathmatical definition of soft argmax
+   *      [[https://en.wikipedia.org/wiki/Softmax_function]].
+   */
+  def softmax(beta: Double): ConditionalDistribution[A, B] = (this.log * beta).exp / (this.log * beta).exp.sum
 
   /** Prints the distribution as a conditional probability table. */
   def cpt(): Unit = {

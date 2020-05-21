@@ -1,7 +1,5 @@
 package com.markblokpoel.probability4scala
 
-import com.markblokpoel.probability4scala.Demo.sd
-import com.markblokpoel.probability4scala.DistributionHelpers.{exp, log}
 import com.markblokpoel.probability4scala.datastructures.ProbabilityTree
 import com.markblokpoel.probability4scala.Implicits._
 
@@ -57,7 +55,7 @@ case class Distribution[A](domain: Set[A], distribution: Map[A, BigDecimal]) {
    */
   @throws[IllegalArgumentException]
   def /(scalar: BigDecimal): Distribution[A] = {
-    require(scalar > 0, "Cannot divide by 0.")
+    require(scalar != 0, "Cannot divide by 0.")
     Distribution(domain, distribution.mapValues(_ / scalar))
   }
 
@@ -117,7 +115,7 @@ case class Distribution[A](domain: Set[A], distribution: Map[A, BigDecimal]) {
    * @see See this Wikipedia page for a mathmatical definition of soft argmax
    *      [[https://en.wikipedia.org/wiki/Softmax_function]].
    */
-  def softArgMax(beta: Double): Distribution[A] = (this.log * beta).exp / (this.log * beta).exp.sum
+  def softmax(beta: Double): Distribution[A] = (this.log * beta).exp / (this.log * beta).exp.sum
 
   /** Returns the Shannon information entropy of this distribution.
    *

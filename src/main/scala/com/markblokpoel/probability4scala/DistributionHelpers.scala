@@ -14,4 +14,8 @@ object DistributionHelpers {
   def exp[A](distribution: Distribution[A]): Distribution[A] = distribution.exp
 
   def log[A](distribution: Distribution[A]): Distribution[A] = distribution.log
+
+  def exp[A, B](distribution: ConditionalDistribution[A, B]): ConditionalDistribution[A, B] = distribution.exp
+
+  def log[A, B](distribution: ConditionalDistribution[A, B]): ConditionalDistribution[A, B] = distribution.log
 }

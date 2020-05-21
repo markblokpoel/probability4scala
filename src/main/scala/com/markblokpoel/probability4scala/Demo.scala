@@ -2,50 +2,57 @@ package com.markblokpoel.probability4scala
 
 object Demo extends App {
 
-//  import com.markblokpoel.probability4scala.Implicits._
+  import com.markblokpoel.probability4scala.Implicits._
   import com.markblokpoel.probability4scala.DistributionHelpers._
 
   case class Ref(label: String)
 
-//  val signals = Set("monkey", "pizza", "tree", "couch") // domain
-//  val signalPriors = signals.uniformDistribution // create uniform distribution
-//  signalPriors.hist() // print histogram
-//  val p1 = pr("monkey", signalPriors) // request probability
-//  println(p1)
-//  println("H(signalPriors) = " + signalPriors.entropy)
-//
-//  // create custom distribution
-//  val (r1, r2, r3) = (Ref("r1"), Ref("r2"), Ref("r3"))
-//  val referents = Vector(r1, r2, r3)
-//  val customDistribution = Vector(.1, .4, .5)
-//  val referentPriors = Distribution(referents, customDistribution)
-//  referentPriors.hist()
-//  println("H(referentPriors) = " + referentPriors.entropy)
-//
-//  println(referentPriors.sample(10).mkString("\n"))
-//
-//  val p2 = pr(Ref("r2"), referentPriors)
-//  println(s"pr(r2)=$p2")
-//
-//  // conditional distribution
-//  val cd = Map(
-//    ("monkey", r1) -> .2,
-//    ("pizza", r1) -> .4,
-//    ("tree", r1) -> .0,
-//    ("couch", r1) -> .4,
-//    ("monkey", r2) -> .5,
-//    ("pizza", r2) -> .1,
-//    ("tree", r2) -> .2,
-//    ("couch", r2) -> .2,
-//    ("monkey", r3) -> .1,
-//    ("pizza", r3) -> .2,
-//    ("tree", r3) -> .4,
-//    ("couch", r3) -> .3
-//  )
-//
-//  val cdistr = ConditionalDistribution(signals, referents.toSet, cd)
-//
-//  cdistr.cpt()
+  val signals = Set("monkey", "pizza", "tree", "couch") // domain
+  val signalPriors = signals.uniformDistribution // create uniform distribution
+  signalPriors.hist() // print histogram
+  val p1 = pr("monkey", signalPriors) // request probability
+  println(p1)
+  println("H(signalPriors) = " + signalPriors.entropy)
+
+  // create custom distribution
+  val (r1, r2, r3) = (Ref("r1"), Ref("r2"), Ref("r3"))
+  val referents = Vector(r1, r2, r3)
+  val customDistribution = Vector(.1, .4, .5)
+  val referentPriors = Distribution(referents, customDistribution)
+  referentPriors.hist()
+  println("H(referentPriors) = " + referentPriors.entropy)
+
+  println(referentPriors.sample(10).mkString("\n"))
+
+  val p2 = pr(Ref("r2"), referentPriors)
+  println(s"pr(r2)=$p2")
+
+  // conditional distribution
+  val cd = Map(
+    ("monkey", r1) -> .2,
+    ("pizza", r1) -> .4,
+    ("tree", r1) -> .0,
+    ("couch", r1) -> .4,
+    ("monkey", r2) -> .5,
+    ("pizza", r2) -> .1,
+    ("tree", r2) -> .2,
+    ("couch", r2) -> .2,
+    ("monkey", r3) -> .1,
+    ("pizza", r3) -> .2,
+    ("tree", r3) -> .4,
+    ("couch", r3) -> .3
+  )
+
+  val cdistr = ConditionalDistribution(signals, referents.toSet, cd)
+
+  cdistr.cpt()
+
+//  cdistr.softmax(5.0).cpt()
+
+  val bla = exp(log(cdistr))
+  println(cdistr.distribution.mkString("\n"))
+
+
 //
 //  val p3 = prV1("monkey", cdistr) // this will marginalize over all possible conditional val
 //  println(s"pr(monkey) = sum_r pr(monkey|r) = $p3")
@@ -122,12 +129,12 @@ object Demo extends App {
 //  pr("s2", li1).hist()
 //  pr("s3", li1).hist()
 
-  val stuff = List("boat", "treehouse", "car")
-  val stuffDistr = (stuff zip List[BigDecimal](4, 7, 15)).toMap
-  val sd = Distribution(stuff.toSet, stuffDistr)
-  println(sd.isNormalized)
-  println(sd.sample(25).mkString("\n"))
-  val softmax = exp(log(sd) * 1.0) / exp(log(sd) * 1.0).sum
-  println(softmax.sum)
-  softmax.hist()
+//  val stuff = List("boat", "treehouse", "car")
+//  val stuffDistr = (stuff zip List[BigDecimal](4, 7, 15)).toMap
+//  val sd = Distribution(stuff.toSet, stuffDistr)
+//  println(sd.isNormalized)
+//  println(sd.sample(25).mkString("\n"))
+//  val softmax = exp(log(sd) * 1.0) / exp(log(sd) * 1.0).sum
+//  println(softmax.sum)
+//  softmax.hist()
 }
