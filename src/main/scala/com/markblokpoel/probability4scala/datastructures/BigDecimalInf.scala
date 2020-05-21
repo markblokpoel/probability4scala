@@ -5,142 +5,310 @@ import java.math.MathContext
 import scala.collection.immutable.NumericRange.{Exclusive, Inclusive}
 import scala.collection.immutable.Range.Partial
 import scala.math.BigDecimal.RoundingMode.RoundingMode
+import spire.std.BigDecimalIsTrig
 
+class BigDecimalInf(val dec: BigDecimal, val isPositiveInfinite: Boolean = false, val isNegativeInfinite: Boolean = false) {
 
-class BigDecimalInf(val bigDecimal: BigDecimal, val isPositiveInfinite: Boolean = false, val isNegativeInfinite: Boolean = false) {
+  val bdt = new BigDecimalIsTrig
 
   def this(d: Double) {
-    this(if (d.isInfinite) 0.0 else d, d.isPosInfinity, d.isNegInfinity)
+    this(
+      if (d.isInfinite) BigDecimal(0) else BigDecimal(d),
+      d.isPosInfinity,
+      d.isNegInfinity
+    )
   }
 
   def this(i: Int) {
-    this(if (i.isInfinite) 0.0 else i, i.isPosInfinity, i.isNegInfinity)
+    this(i, false, false)
   }
 
-  def exp(base: Double = math.E): BigDecimalInf = ???
+  def isInfinite: Boolean = isPositiveInfinite || isNegativeInfinite
 
-  def log(base: Double = math.E): BigDecimalInf = ???
+  def exp: BigDecimalInf =
+    if(isNegativeInfinite) new BigDecimalInf(0, false, false)
+    else if(isPositiveInfinite) this
+    else new BigDecimalInf(bdt.exp(dec))
 
-  def pow(that: BigDecimalInf): BigDecimalInf = ???
+  def log: BigDecimalInf =
+    if(dec == 0) new BigDecimalInf(0, false, true)
+    else new BigDecimalInf(bdt.log(dec), false, false)
 
-  def %(that: BigDecimal): BigDecimal = bigDecimal % that
+//  def pow(that: BigDecimalInf): BigDecimalInf = bdt.
 
-  def *(that: BigDecimal): BigDecimal = bigDecimal * that
+  def %(that: BigDecimalInf): BigDecimalInf =
+    if(isInfinite) this
+    else new BigDecimalInf(dec % that.dec, false, false)
 
-  def +(that: BigDecimal): BigDecimal = bigDecimal + that
+  def *(that: BigDecimalInf): BigDecimalInf =
+    if(isInfinite) this
+    else new BigDecimalInf(dec * that.dec, false, false)
 
-  def -(that: BigDecimal): BigDecimal = bigDecimal - that
+  def +(that: BigDecimalInf): BigDecimalInf =
+    if(isInfinite) this
+    else new BigDecimalInf(dec + that.dec, false, false)
 
-  def /(that: BigDecimal): BigDecimal = bigDecimal / that
+  def -(that: BigDecimalInf): BigDecimalInf =
+    if(isInfinite) this
+    else new BigDecimalInf(dec - that.dec, false, false)
 
-  def /%(that: BigDecimal): (BigDecimal, BigDecimal) = bigDecimal /% that
+  def /(that: BigDecimalInf): BigDecimalInf =
+    if(isInfinite) this
+    else new BigDecimalInf(dec / that.dec, false, false)
 
-  def <(that: BigDecimal): Boolean = bigDecimal < that
+  def /%(that: BigDecimalInf): (BigDecimalInf, BigDecimalInf) =
+    if(isInfinite) (this, this)
+    else {
+      val (div, rest) = dec /% that.dec
+      (new BigDecimalInf(div, false, false), new BigDecimalInf(rest, false, false))
+    }
 
-  def <=(that: BigDecimal): Boolean = bigDecimal <= that
+  def <(that: BigDecimalInf): Boolean =
+    if(isPositiveInfinite && that.isPositiveInfinite) false
+    else if(isNegativeInfinite && that.isNegativeInfinite) false
+    else if(isPositiveInfinite) false
+    else if(isNegativeInfinite) true
+    else dec < that.dec
 
-  def >(that: BigDecimal): Boolean = bigDecimal > that
+  def <=(that: BigDecimalInf): Boolean =
+    if(isPositiveInfinite && that.isPositiveInfinite) true
+    else if(isNegativeInfinite && that.isNegativeInfinite) true
+    else if(isPositiveInfinite) false
+    else if(isNegativeInfinite) true
+    else dec <= that.dec
 
-  def >=(that: BigDecimal): Boolean = bigDecimal >= that
+  def >(that: BigDecimalInf): Boolean =
+    if(isPositiveInfinite && that.isPositiveInfinite) false
+    else if(isNegativeInfinite && that.isNegativeInfinite) false
+    else if(isPositiveInfinite) true
+    else if(isNegativeInfinite) false
+    else dec > that.dec
 
-  def abs: BigDecimal = bigDecimal.abs
+  def >=(that: BigDecimalInf): Boolean =
+    if(isPositiveInfinite && that.isPositiveInfinite) true
+    else if(isNegativeInfinite && that.isNegativeInfinite) true
+    else if(isPositiveInfinite) true
+    else if(isNegativeInfinite) false
+    else dec >= that.dec
 
-  def apply(mc: MathContext): BigDecimal = bigDecimal(mc)
+  def abs: BigDecimalInf = new BigDecimalInf(dec.abs, isPositiveInfinite, isNegativeInfinite)
 
-  def byteValue(): Byte = bigDecimal.byteValue()
+  def apply(mc: MathContext): BigDecimalInf = new BigDecimalInf(dec(mc), isPositiveInfinite, isNegativeInfinite)
 
-  def charValue: Char = bigDecimal.charValue
+  def byteValue(): Byte =
+    if(isPositiveInfinite) (-1).byteValue()
+    else if(isNegativeInfinite) 0.byteValue()
+    else dec.byteValue()
 
-  def compare(that: BigDecimal): Int = bigDecimal.compare(that)
+  def charValue: Char =
+    if(isPositiveInfinite) Double.PositiveInfinity.toChar
+    else if(isNegativeInfinite) Double.NegativeInfinity.toChar
+    else dec.charValue
 
-  def doubleValue(): Double = bigDecimal.doubleValue()
+  def compare(that: BigDecimalInf): Int =
+    if(isPositiveInfinite && that.isPositiveInfinite) 0
+    else if(isNegativeInfinite && that.isNegativeInfinite) 0
+    else if(isPositiveInfinite) 1
+    else if(isNegativeInfinite) -1
+    else dec.compare(that.dec)
 
-  def equals(that: BigDecimal): Boolean = bigDecimal.equals(that)
+  def doubleValue(): Double =
+    if(isPositiveInfinite) Double.PositiveInfinity
+    else if(isNegativeInfinite) Double.NegativeInfinity
+    else dec.doubleValue()
 
-  override def equals(that: Any): Boolean = bigDecimal.equals(that)
+  def equals(that: BigDecimalInf): Boolean =
+    if(isPositiveInfinite && that.isPositiveInfinite) true
+    else if(isNegativeInfinite && that.isNegativeInfinite) true
+    else if(isPositiveInfinite) false
+    else if(isNegativeInfinite) false
+    else dec.equals(that.dec)
 
-  def floatValue(): Float = bigDecimal.floatValue()
+  override def equals(that: Any): Boolean = this.equals(that)
 
-  override def hashCode(): Int = bigDecimal.hashCode()
+  def floatValue(): Float =
+    if(isPositiveInfinite) Float.PositiveInfinity
+    else if(isNegativeInfinite) Float.NegativeInfinity
+    else dec.floatValue()
 
-  def intValue(): Int = bigDecimal.intValue()
+  override def hashCode(): Int =
+    if(isPositiveInfinite) Double.PositiveInfinity.hashCode()
+    else if(isNegativeInfinite) Double.NegativeInfinity.hashCode()
+    else dec.hashCode()
 
-  def isValidByte: Boolean = bigDecimal.isValidByte
+  def intValue(): Int =
+    if(isPositiveInfinite) Int.MaxValue
+    else if(isNegativeInfinite) Int.MinValue
+    else dec.intValue()
 
-  def isValidChar: Boolean = bigDecimal.isValidChar
+  def isValidByte: Boolean =
+    if(isPositiveInfinite) Double.PositiveInfinity.isValidByte
+    else if(isNegativeInfinite) Double.NegativeInfinity.isValidByte
+    else dec.isValidByte
 
-  def isValidInt: Boolean = bigDecimal.isValidInt
+  def isValidChar: Boolean =
+    if(isPositiveInfinite) Double.PositiveInfinity.isValidChar
+    else if(isNegativeInfinite) Double.NegativeInfinity.isValidChar
+    else dec.isValidChar
 
-  def isValidShort: Boolean = bigDecimal.isValidShort
+  def isValidInt: Boolean =
+    if(isPositiveInfinite) Double.PositiveInfinity.isValidInt
+    else if(isNegativeInfinite) Double.NegativeInfinity.isValidInt
+    else dec.isValidInt
 
-  def longValue(): Long = bigDecimal.longValue()
+  def isValidShort: Boolean =
+    if(isPositiveInfinite) Double.PositiveInfinity.isValidShort
+    else if(isNegativeInfinite) Double.NegativeInfinity.isValidShort
+    else dec.isValidShort
 
-  def max(that: BigDecimal): BigDecimal = bigDecimal.max(that)
+  def longValue(): Long =
+    if(isPositiveInfinite) Long.MaxValue
+    else if(isNegativeInfinite) Long.MinValue
+    else dec.longValue()
 
-  val mc: MathContext = bigDecimal.mc
+  def max(that: BigDecimalInf): BigDecimalInf =
+    if(isPositiveInfinite) this
+    else if(isNegativeInfinite) that
+    else new BigDecimalInf(dec.max(that.dec), false, false)
 
-  def min(that: BigDecimal): BigDecimal = bigDecimal.min(that)
+  val mc: MathContext = dec.mc
 
-  def pow(n: Int): BigDecimal = bigDecimal.pow(n)
+  def min(that: BigDecimalInf): BigDecimalInf =
+    if(isPositiveInfinite) that
+    else if(isNegativeInfinite) this
+    else new BigDecimalInf(dec.min(that.dec), false, false)
 
-  def precision: Int = bigDecimal.precision
+  def pow(n: Int): BigDecimalInf = new BigDecimalInf(dec.pow(n), isPositiveInfinite, isNegativeInfinite)
 
-  def quot(that: BigDecimal): BigDecimal = bigDecimal.quot(that)
+  def precision: Int = dec.precision
 
-  def remainder(that: BigDecimal): BigDecimal = bigDecimal.remainder(that)
+  def quot(that: BigDecimalInf): BigDecimalInf =
+    if(isInfinite) this
+    else new BigDecimalInf(dec.quot(that.dec), false, false)
 
-  def round(mc: MathContext): BigDecimal = bigDecimal.round(mc)
+  def remainder(that: BigDecimalInf): BigDecimalInf =
+    if(isInfinite) this
+    else new BigDecimalInf(dec.remainder(that.dec), false, false)
 
-  def scale: Int = bigDecimal.scale
+  def round(mc: MathContext): BigDecimalInf =
+    if(isInfinite) this
+    else new BigDecimalInf(dec.round(mc), false, false)
 
-  def setScale(scale: Int, mode: RoundingMode): BigDecimal = bigDecimal.setScale(scale, mode)
+  def scale: Int = dec.scale
 
-  def setScale(scale: Int): BigDecimal = bigDecimal.setScale(scale)
+  def setScale(scale: Int, mode: RoundingMode): BigDecimalInf =
+    new BigDecimalInf(dec.setScale(scale, mode), isPositiveInfinite, isNegativeInfinite)
 
-  def shortValue(): Short = bigDecimal.shortValue()
+  def setScale(scale: Int): BigDecimalInf =
+    new BigDecimalInf(dec.setScale(scale), isPositiveInfinite, isNegativeInfinite)
 
-  def signum: Int = bigDecimal.signum
+  def shortValue(): Short =
+    if(isPositiveInfinite) Short.MaxValue
+    else if(isNegativeInfinite) Short.MinValue
+    else dec.shortValue()
 
-  def to(end: BigDecimal, step: BigDecimal): Inclusive[BigDecimal] = bigDecimal.to(end, step)
+  def signum: Int =
+    if(isPositiveInfinite) 1
+    else if(isNegativeInfinite) -1
+    else dec.signum
 
-  def to(end: BigDecimal): Partial[BigDecimal, Inclusive[BigDecimal]] = bigDecimal.to(end)
+  def to(end: BigDecimalInf, step: BigDecimalInf): Inclusive[BigDecimal] = {
+    require(!isInfinite && !end.isInfinite && !step.isInfinite, "cannot create range from or to infinity")
+    dec.to(end.dec, step.dec)
+  }
 
-  def toBigInt: BigInt = bigDecimal.toBigInt()
+  def to(end: BigDecimalInf): Partial[BigDecimal, Inclusive[BigDecimal]] = {
+    require(!isInfinite && !end.isInfinite, "cannot create range from or to infinity")
+    dec.to(end.dec)
+  }
 
-  def toBigIntExact: Option[BigInt] = bigDecimal.toBigIntExact()
+  def toBigInt: BigInt = {
+    require(!isInfinite, "cannot convert infinite number to BigInt")
+    dec.toBigInt()
+  }
 
-  def toByte: Byte = bigDecimal.toByte
+  def toBigIntExact: Option[BigInt] =
+    if(isInfinite) None
+    else dec.toBigIntExact()
 
-  def toByteExact: Byte = bigDecimal.toByteExact
+  def toByte: Byte =
+    if(isPositiveInfinite) Double.PositiveInfinity.toByte
+    else if(isNegativeInfinite) Double.NegativeInfinity.toByte
+    else dec.toByte
 
-  def toChar: Char = bigDecimal.toChar
+  def toByteExact: Byte = {
+    require(!isInfinite, "cannot convert infinite number to Byte Exact")
+    dec.toByteExact
+  }
 
-  def toDouble: Double = bigDecimal.toDouble
+  def toChar: Char =
+    if(isPositiveInfinite) Double.PositiveInfinity.toChar
+    else if(isNegativeInfinite) Double.NegativeInfinity.toChar
+    else dec.toChar
 
-  def toFloat: Float = bigDecimal.toFloat
+  def toDouble: Double =
+    if(isPositiveInfinite) Double.PositiveInfinity
+    else if(isNegativeInfinite) Double.NegativeInfinity
+    else dec.toDouble
 
-  def toInt: Int = bigDecimal.toInt
+  def toFloat: Float =
+    if(isPositiveInfinite) Float.PositiveInfinity
+    else if(isNegativeInfinite) Float.NegativeInfinity
+    else dec.toFloat
 
-  def toIntExact: Int = bigDecimal.toIntExact
+  def toInt: Int =
+    if(isPositiveInfinite) Int.MaxValue
+    else if(isNegativeInfinite) Int.MinValue
+    else dec.toInt
 
-  def toLong: Long = bigDecimal.toLong
+  def toIntExact: Int =
+    if(isPositiveInfinite) Int.MaxValue
+    else if(isNegativeInfinite) Int.MinValue
+    else dec.toIntExact
 
-  def toLongExact: Long = bigDecimal.toLongExact
+  def toLong: Long =
+    if(isPositiveInfinite) Long.MaxValue
+    else if(isNegativeInfinite) Long.MinValue
+    else dec.toLong
 
-  def toShort: Short = bigDecimal.toShort
+  def toLongExact: Long =
+    if(isPositiveInfinite) Long.MaxValue
+    else if(isNegativeInfinite) Long.MinValue
+    else dec.toLongExact
 
-  def toShortExact: Short = bigDecimal.toShortExact
+  def toShort: Short =
+    if(isPositiveInfinite) Short.MaxValue
+    else if(isNegativeInfinite) Short.MinValue
+    else dec.toShort
 
-  override def toString(): String = bigDecimal.toString()
+  def toShortExact: Short =
+    if(isPositiveInfinite) Short.MaxValue
+    else if(isNegativeInfinite) Short.MinValue
+    else dec.toShortExact
 
-  def ulp: BigDecimal = bigDecimal.ulp
+  override def toString(): String =
+    if(isPositiveInfinite) "Infinity"
+    else if(isNegativeInfinite) "-Infinity"
+    else dec.toString()
 
-  def unary_- : BigDecimal = bigDecimal.unary_-
+  def ulp: BigDecimalInf = {
+    require(!isInfinite, "unit of last in place not defined for infinite values")
+    new BigDecimalInf(dec.ulp, false, false)
+  }
 
-  def underlying(): BigDecimal = bigDecimal.underlying()
+  def unary_- : BigDecimalInf = new BigDecimalInf(dec.unary_-, !isPositiveInfinite, !isNegativeInfinite)
 
-  def until(end: BigDecimal, step: BigDecimal): Exclusive[BigDecimal] = bigDecimal.until(end, step)
+  def underlying(): BigDecimal = dec.underlying()
 
-  def until(end: BigDecimal): Partial[BigDecimal, Exclusive[BigDecimal]] = bigDecimal.until(end)
+  def until(end: BigDecimalInf, step: BigDecimalInf): Exclusive[BigDecimal] = {
+    require(!isInfinite && !end.isInfinite && !step.isInfinite, "cannot create range from or to infinity")
+    dec.until(end.dec, step.dec)
+  }
+
+  def until(end: BigDecimalInf): Partial[BigDecimal, Exclusive[BigDecimal]] =
+    {
+      require(!isInfinite && !end.isInfinite, "cannot create range from or to infinity")
+      dec.until(end.dec)
+    }
 
 }

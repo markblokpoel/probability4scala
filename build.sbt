@@ -15,6 +15,7 @@ lazy val commonSettings = Seq(
 //  ),
   libraryDependencies += Dependencies.scalatest,
   libraryDependencies ++= Seq(
+    "org.typelevel" %% "spire" % "0.14.1"
   ),
   // Compile options
   updateImpactOpenBrowser := false,

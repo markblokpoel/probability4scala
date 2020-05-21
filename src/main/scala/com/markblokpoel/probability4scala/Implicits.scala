@@ -1,5 +1,7 @@
 package com.markblokpoel.probability4scala
 
+import com.markblokpoel.probability4scala.datastructures.BigDecimalInf
+
 /** Implicit functions for more concise syntax. */
 object Implicits {
 
@@ -44,11 +46,17 @@ object Implicits {
   implicit class ImplDouble(double: Double) {
     /** Converts Double to BigDecimal. */
     def toBigDecimal: BigDecimal = BigDecimal(double)
+
+    /** Converts Double to BigDecimalInf. */
+    def toBigDecimalInf: BigDecimalInf = new BigDecimalInf(double, double.isPosInfinity, double.isNegInfinity)
   }
 
   implicit class ImplInt(int: Int) {
     /** Converts Int to BigDecimal. */
     def toBigDecimal: BigDecimal = BigDecimal(int)
+
+    /** Converts Int to BigDecimalInf. */
+    def toBigDecimalInf: BigDecimalInf = new BigDecimalInf(int, false, false)
   }
 
 }
