@@ -11,16 +11,16 @@ class BigNatural(val dec: BigDecimal, val isPositiveInfinite: Boolean = false, v
 
   val bdt = new BigDecimalIsTrig
 
-  def this(d: Double) {
+  def this(d: Double, mc: MathContext = BigDecimal.defaultMathContext) {
     this(
-      if (d.isInfinite) BigDecimal(0) else BigDecimal(d),
+      if (d.isInfinite) BigDecimal(0, mc) else BigDecimal(d, mc),
       d.isPosInfinity,
       d.isNegInfinity
     )
   }
 
-  def this(i: Int) {
-    this(i, false, false)
+  def this(i: Int, mc: MathContext = BigDecimal.defaultMathContext) {
+    this(BigDecimal(i, mc), false, false)
   }
 
   def isInfinite: Boolean = isPositiveInfinite || isNegativeInfinite
@@ -314,7 +314,7 @@ class BigNatural(val dec: BigDecimal, val isPositiveInfinite: Boolean = false, v
     else if(isNegativeInfinite) Short.MinValue
     else dec.toShortExact
 
-  override def toString(): String =
+  override def toString: String =
     if(isPositiveInfinite) "Infinity"
     else if(isNegativeInfinite) "-Infinity"
     else dec.toString()
@@ -339,4 +339,13 @@ class BigNatural(val dec: BigDecimal, val isPositiveInfinite: Boolean = false, v
       dec.until(end.dec)
     }
 
+}
+
+object BigNatural {
+  def apply(dec: BigDecimal, isPositiveInfinite: Boolean = false, isNegativeInfinite: Boolean = false) =
+    new BigNatural(dec, isPositiveInfinite, isNegativeInfinite)
+
+  def apply(d: Double, mc: MathContext = BigDecimal.defaultMathContext) = new BigNatural(d, mc)
+
+//  def apply(i: Int, mc: MathContext = BigDecimal.defaultMathContext) = new BigNatural(i, mc)
 }

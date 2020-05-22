@@ -15,7 +15,7 @@ object Implicits {
 
     /**
      * Constructs a distribution over the domain where pr(a) = 1.0 if v == value and 0.0 otherwise.
-     * @param value
+     * @param value value in the domain to construct distribution for
      * @return
      */
     @throws[IllegalArgumentException]
@@ -28,16 +28,16 @@ object Implicits {
   implicit class ImplConditional[A](value: A) {
     /**
      * Syntax for writing a conditional given a value.
-     * @param condition
-     * @tparam B
+     * @param condition condition value
+     * @tparam B type of the condition domain
      * @return
      */
     def |[B](condition: B): Conditional1[A, B] = Conditional1(value, condition)
 
     /**
      * Syntax for writing a conditional given a distribution.
-     * @param condition
-     * @tparam B
+     * @param condition condition value
+     * @tparam B type of the condition domain
      * @return
      */
     def |[B](condition: Distribution[B]): Conditional2[A, B] = Conditional2(value, condition)
@@ -48,7 +48,22 @@ object Implicits {
     def toBigDecimal: BigDecimal = BigDecimal(double)
 
     /** Converts Double to BigDecimalInf. */
-    def toBigNatural: BigNatural = new BigNatural(double, double.isPosInfinity, double.isNegInfinity)
+    def toBigNatural: BigNatural = BigNatural(double, double.isPosInfinity, double.isNegInfinity)
+
+    def %(nat: BigNatural): BigNatural = BigNatural(double) % nat
+    def *(nat: BigNatural): BigNatural = BigNatural(double) * nat
+    def +(nat: BigNatural): BigNatural = BigNatural(double) + nat
+    def -(nat: BigNatural): BigNatural = BigNatural(double) - nat
+    def /(nat: BigNatural): BigNatural = BigNatural(double) / nat
+    def /%(nat: BigNatural): (BigNatural, BigNatural) = BigNatural(double) /% nat
+    def <(nat: BigNatural): Boolean = BigNatural(double) < nat
+    def <=(nat: BigNatural): Boolean = BigNatural(double) <= nat
+    def >(nat: BigNatural): Boolean = BigNatural(double) > nat
+    def >=(nat: BigNatural): Boolean = BigNatural(double) >= nat
+    def min(nat: BigNatural): BigNatural = BigNatural(double) min nat
+    def max(nat: BigNatural): BigNatural = BigNatural(double) max nat
+    def quot(nat: BigNatural): BigNatural = BigNatural(double) quot nat
+    def remainder(nat: BigNatural): BigNatural = BigNatural(double) remainder nat
   }
 
   implicit class ImplInt(int: Int) {
@@ -56,7 +71,12 @@ object Implicits {
     def toBigDecimal: BigDecimal = BigDecimal(int)
 
     /** Converts Int to BigDecimalInf. */
-    def toBigNatural: BigNatural = new BigNatural(int, false, false)
+    def toBigNatural: BigNatural = BigNatural(int)
+  }
+
+  implicit class ImplBigNatural(nat: BigNatural) {
+    def log: BigNatural = nat.log
+    def exp: BigNatural = nat.exp
   }
 
 }
