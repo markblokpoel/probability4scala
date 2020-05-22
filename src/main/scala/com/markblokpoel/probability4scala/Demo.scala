@@ -1,6 +1,6 @@
 package com.markblokpoel.probability4scala
 
-import com.markblokpoel.probability4scala.datastructures.BigDecimalInf
+import com.markblokpoel.probability4scala.datastructures.BigNatural
 
 
 import com.markblokpoel.probability4scala.Implicits._
@@ -10,9 +10,9 @@ import com.markblokpoel.probability4scala.Implicits._
 
 object Demo extends App {
 
-  println(new BigDecimalInf(0).log + 1.toBigDecimalInf)
+  println(new BigNatural(0).log + 1)
 
-  println(0.toBigDecimalInf.log.exp)
+  println(0.toBigNatural.log.exp)
 
 //
 //

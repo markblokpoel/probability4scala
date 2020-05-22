@@ -1,6 +1,6 @@
 package com.markblokpoel.probability4scala
 
-import com.markblokpoel.probability4scala.datastructures.BigDecimalInf
+import com.markblokpoel.probability4scala.datastructures.BigNatural
 
 /** Implicit functions for more concise syntax. */
 object Implicits {
@@ -48,7 +48,7 @@ object Implicits {
     def toBigDecimal: BigDecimal = BigDecimal(double)
 
     /** Converts Double to BigDecimalInf. */
-    def toBigDecimalInf: BigDecimalInf = new BigDecimalInf(double, double.isPosInfinity, double.isNegInfinity)
+    def toBigNatural: BigNatural = new BigNatural(double, double.isPosInfinity, double.isNegInfinity)
   }
 
   implicit class ImplInt(int: Int) {
@@ -56,7 +56,7 @@ object Implicits {
     def toBigDecimal: BigDecimal = BigDecimal(int)
 
     /** Converts Int to BigDecimalInf. */
-    def toBigDecimalInf: BigDecimalInf = new BigDecimalInf(int, false, false)
+    def toBigNatural: BigNatural = new BigNatural(int, false, false)
   }
 
 }
