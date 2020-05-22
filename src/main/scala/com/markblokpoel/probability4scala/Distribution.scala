@@ -1,27 +1,27 @@
 package com.markblokpoel.probability4scala
 
-import com.markblokpoel.probability4scala.datastructures.ProbabilityTree
+import com.markblokpoel.probability4scala.datastructures.{BigNatural, ProbabilityTree}
 import com.markblokpoel.probability4scala.Implicits._
 
 import scala.reflect.ClassTag
 import scala.util.Random
 
 /**
- * Implements a generic probability distribution. The probabilities are represented by BigDecimal for increased
+ * Implements a generic probability distribution. The probabilities are represented by BigNatural for increased
  * accuracy.
  *
  * @param domain       The set of values that span this distribution.
  * @param distribution The probabilities for each value in the domain.
  * @tparam A The type of the domain.
  */
-case class Distribution[A](domain: Set[A], distribution: Map[A, BigDecimal]) {
+case class Distribution[A](domain: Set[A], distribution: Map[A, BigNatural]) {
 
   /**
    * @param value A value within the domain.
    * @return The probability of the value.
    */
   @throws[NoSuchElementException]
-  def pr(value: A): BigDecimal = distribution(value)
+  def pr(value: A): BigNatural = distribution(value)
 
   /**
    * Scales the distribution according to the scalar: pr(domain) * scalar
@@ -31,7 +31,7 @@ case class Distribution[A](domain: Set[A], distribution: Map[A, BigDecimal]) {
    * @param scalar
    * @return The scaled distribution.
    */
-  def *(scalar: BigDecimal): Distribution[A] = Distribution(domain, distribution.mapValues(_ * scalar))
+  def *(scalar: BigNatural): Distribution[A] = Distribution(domain, distribution.mapValues(_ * scalar))
 
   def +(other: Distribution[A]): Distribution[A] = {
     require(domain == other.domain, "addition for distributions requires the same domains")
@@ -54,7 +54,7 @@ case class Distribution[A](domain: Set[A], distribution: Map[A, BigDecimal]) {
    * @return The scaled distribution.
    */
   @throws[IllegalArgumentException]
-  def /(scalar: BigDecimal): Distribution[A] = {
+  def /(scalar: BigNatural): Distribution[A] = {
     require(scalar != 0, "Cannot divide by 0.")
     Distribution(domain, distribution.mapValues(_ / scalar))
   }
@@ -88,7 +88,7 @@ case class Distribution[A](domain: Set[A], distribution: Map[A, BigDecimal]) {
 
   def isNormalized: Boolean = sum == 1
 
-  def accuracy: BigDecimal = 1.0.toBigDecimal - sum
+  def accuracy: BigNatural = 1.0.toBigNatural - sum
 
   /** Returns the value in the domain with the maximum probability.
    * If multiple maxima exist, it returns one of those at random.
@@ -103,9 +103,9 @@ case class Distribution[A](domain: Set[A], distribution: Map[A, BigDecimal]) {
     maxValSet(Random.nextInt(maxValSet.length))
   }
 
-  def exp: Distribution[A] = Distribution(domain, distribution.mapValues(bd => math.exp(bd.doubleValue).toBigDecimal))
+  def exp: Distribution[A] = Distribution(domain, distribution.mapValues(_.exp))
 
-  def log: Distribution[A] = Distribution(domain, distribution.mapValues(bd => math.log(bd.doubleValue).toBigDecimal))
+  def log: Distribution[A] = Distribution(domain, distribution.mapValues(_.log))
 
   /**
    * Returns the softmaxed distribution
@@ -115,7 +115,7 @@ case class Distribution[A](domain: Set[A], distribution: Map[A, BigDecimal]) {
    * @see See this Wikipedia page for a mathmatical definition of soft argmax
    *      [[https://en.wikipedia.org/wiki/Softmax_function]].
    */
-  def softmax(beta: Double): Distribution[A] = (this.log * beta).exp / (this.log * beta).exp.sum
+  def softmax(beta: BigNatural): Distribution[A] = (this.log * beta).exp / (this.log * beta).exp.sum
 
   /** Returns the Shannon information entropy of this distribution.
    *
@@ -124,16 +124,16 @@ case class Distribution[A](domain: Set[A], distribution: Map[A, BigDecimal]) {
    *
    * @return Entropy of the distribution
    */
-  def entropy: Double = {
-    distribution.values.foldLeft(0.0)((e: Double, p: BigDecimal) =>
-        e - (if (p > 0) p.doubleValue * math.log(p.doubleValue) / math.log(2) else 0)
+  def entropy: BigNatural = {
+    distribution.values.foldLeft(BigNatural(0))((e: BigNatural, p: BigNatural) =>
+      e - (if(p > 0) p * BigNatural.log(p) / BigNatural.log(2) else BigNatural(0))
     )
   }
 
   /**
    * @return The sum of the probabilities, i.e., the probability mass.
    */
-  def sum: BigDecimal = distribution.values.sum
+  def sum: BigNatural = distribution.values.fold(BigNatural(0))((acc: BigNatural, p: BigNatural) => acc + p)
 
   override def toString: String = distribution.mkString("{", ", ", "}")
 
@@ -143,11 +143,11 @@ case class Distribution[A](domain: Set[A], distribution: Map[A, BigDecimal]) {
 
     domain.foreach(value => {
       val p = distribution(value)
-      val hs = List.tabulate((20 * p).intValue)(_ => "#").mkString
+      val hs = List.tabulate((20 * p).intValue())(_ => "#").mkString
       println(
         value.toString +
           " " * (maxStrLen - value.toString.length + 1) +
-          f"$p%1.4f\t$hs")
+          f"${p.doubleValue()}%1.4f\t$hs")
     }
     )
   }
@@ -156,11 +156,11 @@ case class Distribution[A](domain: Set[A], distribution: Map[A, BigDecimal]) {
 /** Factory for [[Distribution]] instances. */
 case object Distribution {
   def apply[A, X: ClassTag](domain: Vector[A], distribution: Vector[Double]): Distribution[A] =
-    Distribution(domain.toSet, (domain zip distribution.map(BigDecimal(_))).toMap)
+    Distribution(domain.toSet, (domain zip distribution.map(BigNatural(_))).toMap)
 
-  def apply[A, X: ClassTag, Y: ClassTag](domain: Vector[A], distribution: Vector[BigDecimal]): Distribution[A] =
+  def apply[A, X: ClassTag, Y: ClassTag](domain: Vector[A], distribution: Vector[BigNatural]): Distribution[A] =
     Distribution(domain.toSet, (domain zip distribution).toMap)
 
   def apply[A, X: ClassTag, Y: ClassTag](domain: Set[A], distribution: Map[A, Double]): Distribution[A] =
-    Distribution(domain, distribution.mapValues(BigDecimal(_)))
+    Distribution(domain, distribution.mapValues(BigNatural(_)))
 }

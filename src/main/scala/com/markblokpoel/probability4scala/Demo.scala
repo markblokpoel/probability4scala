@@ -4,7 +4,7 @@ import com.markblokpoel.probability4scala.datastructures.BigNatural
 
 
 import com.markblokpoel.probability4scala.Implicits._
-//import com.markblokpoel.probability4scala.DistributionHelpers._
+import com.markblokpoel.probability4scala.DistributionHelpers._
 
 
 
@@ -14,54 +14,54 @@ object Demo extends App {
 
   println(0.toBigNatural.log.exp)
 
-//
-//
-//  case class Ref(label: String)
-//
-//  val signals = Set("monkey", "pizza", "tree", "couch") // domain
-//  val signalPriors = signals.uniformDistribution // create uniform distribution
-//  signalPriors.hist() // print histogram
-//  val p1 = pr("monkey", signalPriors) // request probability
-//  println(p1)
-//  println("H(signalPriors) = " + signalPriors.entropy)
-//
-//  // create custom distribution
-//  val (r1, r2, r3) = (Ref("r1"), Ref("r2"), Ref("r3"))
-//  val referents = Vector(r1, r2, r3)
-//  val customDistribution = Vector(.1, .4, .5)
-//  val referentPriors = Distribution(referents, customDistribution)
-//  referentPriors.hist()
-//  println("H(referentPriors) = " + referentPriors.entropy)
-//
-//  println(referentPriors.sample(10).mkString("\n"))
-//
-//  val p2 = pr(Ref("r2"), referentPriors)
-//  println(s"pr(r2)=$p2")
-//
-//  // conditional distribution
-//  val cd = Map(
-//    ("monkey", r1) -> .2,
-//    ("pizza", r1) -> .4,
-//    ("tree", r1) -> .0,
-//    ("couch", r1) -> .4,
-//    ("monkey", r2) -> .5,
-//    ("pizza", r2) -> .1,
-//    ("tree", r2) -> .2,
-//    ("couch", r2) -> .2,
-//    ("monkey", r3) -> .1,
-//    ("pizza", r3) -> .2,
-//    ("tree", r3) -> .4,
-//    ("couch", r3) -> .3
-//  )
-//
-//  val cdistr = ConditionalDistribution(signals, referents.toSet, cd)
-//
-//  cdistr.cpt()
-//
-////  cdistr.softmax(5.0).cpt()
-//
-//  val bla = exp(log(cdistr))
-//  println(cdistr.distribution.mkString("\n"))
+
+
+  case class Ref(label: String)
+
+  val signals = Set("monkey", "pizza", "tree", "couch") // domain
+  val signalPriors = signals.uniformDistribution // create uniform distribution
+  signalPriors.hist() // print histogram
+  val p1 = pr("monkey", signalPriors) // request probability
+  println(p1)
+  println("H(signalPriors) = " + signalPriors.entropy)
+
+  // create custom distribution
+  val (r1, r2, r3) = (Ref("r1"), Ref("r2"), Ref("r3"))
+  val referents = Vector(r1, r2, r3)
+  val customDistribution = Vector(.1, .4, .5)
+  val referentPriors = Distribution(referents, customDistribution)
+  referentPriors.hist()
+  println("H(referentPriors) = " + referentPriors.entropy)
+
+  println(referentPriors.sample(10).mkString("\n"))
+
+  val p2 = pr(Ref("r2"), referentPriors)
+  println(s"pr(r2)=$p2")
+
+  // conditional distribution
+  val cd = Map(
+    ("monkey", r1) -> .2,
+    ("pizza", r1) -> .4,
+    ("tree", r1) -> .0,
+    ("couch", r1) -> .4,
+    ("monkey", r2) -> .5,
+    ("pizza", r2) -> .1,
+    ("tree", r2) -> .2,
+    ("couch", r2) -> .2,
+    ("monkey", r3) -> .1,
+    ("pizza", r3) -> .2,
+    ("tree", r3) -> .4,
+    ("couch", r3) -> .3
+  )
+
+  val cdistr = ConditionalDistribution(signals, referents.toSet, cd)
+
+  cdistr.cpt()
+
+  cdistr.softmax(5.0.toBigNatural).cpt()
+
+  val bla = exp(5 * log(cdistr))
+  println(bla.cpt())
 
 
 //

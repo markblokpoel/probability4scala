@@ -11,24 +11,24 @@ import com.markblokpoel.probability4scala.Distribution
 case class ProbabilityTree[A](distribution: Distribution[A]) {
   private val values = distribution.distribution.keys.toVector
   private val probabilities = values.map(distribution.distribution(_))
-  val tree: PTree[A] = constructPTree(values, probabilities, 0)
+  val tree: PTree[A] = constructPTree(values, probabilities, BigNatural(0))
 
   /**
    * Retrieves the element from the distribution at mass-point {{{p}}}.
    * @param p
    * @return
    */
-  def apply(p: BigDecimal): A = tree(p)
+  def apply(p: BigNatural): A = tree(p)
 
-  private def constructPTree(values: Vector[A], probabilities: Vector[BigDecimal], p: BigDecimal): PTree[A] = {
+  private def constructPTree(values: Vector[A], probabilities: Vector[BigNatural], p: BigNatural): PTree[A] = {
     val (leftValues, rightValues) = values.splitAt(values.length/2)
-    val (leftProbabilities, rigthProbabilities) = probabilities.splitAt(probabilities.length/2)
-    val leftSum = leftProbabilities.sum
+    val (leftProbabilities, rightProbabilities) = probabilities.splitAt(probabilities.length/2)
+    val leftSum = leftProbabilities.fold(BigNatural(0))((acc: BigNatural, p: BigNatural) => acc + p)
 
     if(values.tail.isEmpty) PLeaf(values.head)
     else {
-      PBranch(constructPTree(leftValues, leftProbabilities, 0),
-        constructPTree(rightValues, rigthProbabilities, leftSum + p),
+      PBranch(constructPTree(leftValues, leftProbabilities, BigNatural(0)),
+        constructPTree(rightValues, rightProbabilities, leftSum + p),
         leftSum + p)
     }
   }

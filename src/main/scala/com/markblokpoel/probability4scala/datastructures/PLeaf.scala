@@ -1,7 +1,7 @@
 package com.markblokpoel.probability4scala.datastructures
 
 class PLeaf[A](val value: A) extends PTree[A] {
-  def apply(t: BigDecimal): A = value
+  def apply(t: BigNatural): A = value
 
   override def toString: String = value.toString
 }

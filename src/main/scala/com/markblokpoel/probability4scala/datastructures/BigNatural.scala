@@ -2,25 +2,26 @@ package com.markblokpoel.probability4scala.datastructures
 
 import java.math.MathContext
 
+import spire.math.Real
+
 import scala.collection.immutable.NumericRange.{Exclusive, Inclusive}
 import scala.collection.immutable.Range.Partial
 import scala.math.BigDecimal.RoundingMode.RoundingMode
 import spire.std.BigDecimalIsTrig
 
-class BigNatural(val dec: BigDecimal, val isPositiveInfinite: Boolean = false, val isNegativeInfinite: Boolean = false) {
+import scala.math.{BigDecimal, Ordered, ScalaNumber, ScalaNumericConversions}
 
-  val bdt = new BigDecimalIsTrig
+class BigNatural(val dec: BigDecimal, val isPositiveInfinite: Boolean = false, val isNegativeInfinite: Boolean = false)
+  extends ScalaNumber with ScalaNumericConversions with Serializable with Ordered[BigNatural] {
 
-  def this(d: Double, mc: MathContext = BigDecimal.defaultMathContext) {
+  val bdt = new BigDecimalIsTrig(dec.mc)
+
+  def this(d: Double) {
     this(
-      if (d.isInfinite) BigDecimal(0, mc) else BigDecimal(d, mc),
+      if (d.isInfinite) BigDecimal(0) else BigDecimal(d),
       d.isPosInfinity,
       d.isNegInfinity
     )
-  }
-
-  def this(i: Int, mc: MathContext = BigDecimal.defaultMathContext) {
-    this(BigDecimal(i, mc), false, false)
   }
 
   def isInfinite: Boolean = isPositiveInfinite || isNegativeInfinite
@@ -75,7 +76,7 @@ class BigNatural(val dec: BigDecimal, val isPositiveInfinite: Boolean = false, v
 
   def /%(that: Double): (BigNatural, BigNatural) = this /% new BigNatural(that)
 
-  def <(that: BigNatural): Boolean =
+  override def <(that: BigNatural): Boolean =
     if(isPositiveInfinite && that.isPositiveInfinite) false
     else if(isNegativeInfinite && that.isNegativeInfinite) false
     else if(isPositiveInfinite) false
@@ -84,7 +85,7 @@ class BigNatural(val dec: BigDecimal, val isPositiveInfinite: Boolean = false, v
 
   def <(that: Double): Boolean = this < new BigNatural(that)
 
-  def <=(that: BigNatural): Boolean =
+  override def <=(that: BigNatural): Boolean =
     if(isPositiveInfinite && that.isPositiveInfinite) true
     else if(isNegativeInfinite && that.isNegativeInfinite) true
     else if(isPositiveInfinite) false
@@ -93,7 +94,7 @@ class BigNatural(val dec: BigDecimal, val isPositiveInfinite: Boolean = false, v
 
   def <=(that: Double): Boolean = this <= new BigNatural(that)
 
-  def >(that: BigNatural): Boolean =
+  override def >(that: BigNatural): Boolean =
     if(isPositiveInfinite && that.isPositiveInfinite) false
     else if(isNegativeInfinite && that.isNegativeInfinite) false
     else if(isPositiveInfinite) true
@@ -102,7 +103,7 @@ class BigNatural(val dec: BigDecimal, val isPositiveInfinite: Boolean = false, v
 
   def >(that: Double): Boolean = this > new BigNatural(that)
 
-  def >=(that: BigNatural): Boolean =
+  override def >=(that: BigNatural): Boolean =
     if(isPositiveInfinite && that.isPositiveInfinite) true
     else if(isNegativeInfinite && that.isNegativeInfinite) true
     else if(isPositiveInfinite) true
@@ -111,11 +112,19 @@ class BigNatural(val dec: BigDecimal, val isPositiveInfinite: Boolean = false, v
 
   def >=(that: Double): Boolean = this >= new BigNatural(that)
 
+  def ==(that: BigNatural): Boolean = (this equals that)
+
+  def !=(that: BigNatural): Boolean = !(this == that)
+
+  def ==(that: Double): Boolean = (this equals BigNatural(that))
+
+  def !=(that: Double): Boolean = !(this == BigNatural(that))
+
   def abs: BigNatural = new BigNatural(dec.abs, isPositiveInfinite, isNegativeInfinite)
 
   def apply(mc: MathContext): BigNatural = new BigNatural(dec(mc), isPositiveInfinite, isNegativeInfinite)
 
-  def byteValue(): Byte =
+  override def byteValue(): Byte =
     if(isPositiveInfinite) (-1).byteValue()
     else if(isNegativeInfinite) 0.byteValue()
     else dec.byteValue()
@@ -161,22 +170,22 @@ class BigNatural(val dec: BigDecimal, val isPositiveInfinite: Boolean = false, v
     else if(isNegativeInfinite) Int.MinValue
     else dec.intValue()
 
-  def isValidByte: Boolean =
+  override def isValidByte: Boolean =
     if(isPositiveInfinite) Double.PositiveInfinity.isValidByte
     else if(isNegativeInfinite) Double.NegativeInfinity.isValidByte
     else dec.isValidByte
 
-  def isValidChar: Boolean =
+  override def isValidChar: Boolean =
     if(isPositiveInfinite) Double.PositiveInfinity.isValidChar
     else if(isNegativeInfinite) Double.NegativeInfinity.isValidChar
     else dec.isValidChar
 
-  def isValidInt: Boolean =
+  override def isValidInt: Boolean =
     if(isPositiveInfinite) Double.PositiveInfinity.isValidInt
     else if(isNegativeInfinite) Double.NegativeInfinity.isValidInt
     else dec.isValidInt
 
-  def isValidShort: Boolean =
+  override def isValidShort: Boolean =
     if(isPositiveInfinite) Double.PositiveInfinity.isValidShort
     else if(isNegativeInfinite) Double.NegativeInfinity.isValidShort
     else dec.isValidShort
@@ -230,7 +239,7 @@ class BigNatural(val dec: BigDecimal, val isPositiveInfinite: Boolean = false, v
   def setScale(scale: Int): BigNatural =
     new BigNatural(dec.setScale(scale), isPositiveInfinite, isNegativeInfinite)
 
-  def shortValue(): Short =
+  override def shortValue(): Short =
     if(isPositiveInfinite) Short.MaxValue
     else if(isNegativeInfinite) Short.MinValue
     else dec.shortValue()
@@ -259,7 +268,7 @@ class BigNatural(val dec: BigDecimal, val isPositiveInfinite: Boolean = false, v
     if(isInfinite) None
     else dec.toBigIntExact()
 
-  def toByte: Byte =
+  override def toByte: Byte =
     if(isPositiveInfinite) Double.PositiveInfinity.toByte
     else if(isNegativeInfinite) Double.NegativeInfinity.toByte
     else dec.toByte
@@ -269,22 +278,22 @@ class BigNatural(val dec: BigDecimal, val isPositiveInfinite: Boolean = false, v
     dec.toByteExact
   }
 
-  def toChar: Char =
+  override def toChar: Char =
     if(isPositiveInfinite) Double.PositiveInfinity.toChar
     else if(isNegativeInfinite) Double.NegativeInfinity.toChar
     else dec.toChar
 
-  def toDouble: Double =
+  override def toDouble: Double =
     if(isPositiveInfinite) Double.PositiveInfinity
     else if(isNegativeInfinite) Double.NegativeInfinity
     else dec.toDouble
 
-  def toFloat: Float =
+  override def toFloat: Float =
     if(isPositiveInfinite) Float.PositiveInfinity
     else if(isNegativeInfinite) Float.NegativeInfinity
     else dec.toFloat
 
-  def toInt: Int =
+  override def toInt: Int =
     if(isPositiveInfinite) Int.MaxValue
     else if(isNegativeInfinite) Int.MinValue
     else dec.toInt
@@ -294,7 +303,7 @@ class BigNatural(val dec: BigDecimal, val isPositiveInfinite: Boolean = false, v
     else if(isNegativeInfinite) Int.MinValue
     else dec.toIntExact
 
-  def toLong: Long =
+  override def toLong: Long =
     if(isPositiveInfinite) Long.MaxValue
     else if(isNegativeInfinite) Long.MinValue
     else dec.toLong
@@ -304,7 +313,7 @@ class BigNatural(val dec: BigDecimal, val isPositiveInfinite: Boolean = false, v
     else if(isNegativeInfinite) Long.MinValue
     else dec.toLongExact
 
-  def toShort: Short =
+  override def toShort: Short =
     if(isPositiveInfinite) Short.MaxValue
     else if(isNegativeInfinite) Short.MinValue
     else dec.toShort
@@ -339,13 +348,40 @@ class BigNatural(val dec: BigDecimal, val isPositiveInfinite: Boolean = false, v
       dec.until(end.dec)
     }
 
+  override def isWhole(): Boolean = dec.isWhole()
 }
 
 object BigNatural {
   def apply(dec: BigDecimal, isPositiveInfinite: Boolean = false, isNegativeInfinite: Boolean = false) =
     new BigNatural(dec, isPositiveInfinite, isNegativeInfinite)
 
-  def apply(d: Double, mc: MathContext = BigDecimal.defaultMathContext) = new BigNatural(d, mc)
+  def apply(d: Double) = new BigNatural(d)
 
-//  def apply(i: Int, mc: MathContext = BigDecimal.defaultMathContext) = new BigNatural(i, mc)
+  def min(nat1: BigNatural, nat2: BigNatural): BigNatural = nat1 min nat2
+
+  def max(nat1: BigNatural, nat2: BigNatural): BigNatural = nat1 max nat2
+
+  def min(double: Double, nat: BigNatural): BigNatural = BigNatural(double) min nat
+
+  def max(double: Double, nat: BigNatural): BigNatural = BigNatural(double) max nat
+
+  def min(nat: BigNatural, double: Double): BigNatural = nat min double
+
+  def max(nat: BigNatural, double: Double): BigNatural = nat max double
+
+  def log(nat: BigNatural): BigNatural = nat.log
+
+  def exp(nat: BigNatural): BigNatural = nat.exp
+
+  def log(double: Double): BigNatural = BigNatural(double).log
+
+  def exp(double: Double): BigNatural = BigNatural(double).exp
+
+  val bdt = new BigDecimalIsTrig()
+
+  def e: BigNatural = BigNatural(bdt.fromReal(Real.e))
+
+  def pi: BigNatural = BigNatural(bdt.fromReal(Real.pi))
 }
+
+

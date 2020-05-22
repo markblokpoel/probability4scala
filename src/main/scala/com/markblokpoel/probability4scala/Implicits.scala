@@ -10,8 +10,10 @@ object Implicits {
      * Constructs a uniform distribution over the domain.
      * @return
      */
-    def uniformDistribution: Distribution[A] =
-      Distribution(domain, domain.map(value => value -> BigDecimal(1.0) / BigDecimal(domain.size)).toMap)
+    def uniformDistribution: Distribution[A] = {
+      val distribution = domain.map(value => value -> BigNatural(1.0) / BigNatural(domain.size.doubleValue())).toMap
+      Distribution(domain, distribution)
+    }
 
     /**
      * Constructs a distribution over the domain where pr(a) = 1.0 if v == value and 0.0 otherwise.
@@ -44,11 +46,12 @@ object Implicits {
   }
 
   implicit class ImplDouble(double: Double) {
-    /** Converts Double to BigDecimal. */
-    def toBigDecimal: BigDecimal = BigDecimal(double)
-
-    /** Converts Double to BigDecimalInf. */
+    /** Converts Double to BigNatural. */
     def toBigNatural: BigNatural = BigNatural(double, double.isPosInfinity, double.isNegInfinity)
+
+    def *[A, B](cd: ConditionalDistribution[A, B]): ConditionalDistribution[A, B] = cd * double.toBigNatural
+
+    def *[A](cd: Distribution[A]): Distribution[A] = cd * double.toBigNatural
 
     def %(nat: BigNatural): BigNatural = BigNatural(double) % nat
     def *(nat: BigNatural): BigNatural = BigNatural(double) * nat
@@ -60,6 +63,8 @@ object Implicits {
     def <=(nat: BigNatural): Boolean = BigNatural(double) <= nat
     def >(nat: BigNatural): Boolean = BigNatural(double) > nat
     def >=(nat: BigNatural): Boolean = BigNatural(double) >= nat
+    def ==(nat: BigNatural): Boolean = (nat equals BigNatural(double))
+    def !=(nat: BigNatural): Boolean = !(nat == BigNatural(double))
     def min(nat: BigNatural): BigNatural = BigNatural(double) min nat
     def max(nat: BigNatural): BigNatural = BigNatural(double) max nat
     def quot(nat: BigNatural): BigNatural = BigNatural(double) quot nat
@@ -67,11 +72,8 @@ object Implicits {
   }
 
   implicit class ImplInt(int: Int) {
-    /** Converts Int to BigDecimal. */
-    def toBigDecimal: BigDecimal = BigDecimal(int)
-
-    /** Converts Int to BigDecimalInf. */
-    def toBigNatural: BigNatural = BigNatural(int)
+    /** Converts Int to BigNatural. */
+    def toBigNatural: BigNatural = BigNatural(int.doubleValue())
   }
 
   implicit class ImplBigNatural(nat: BigNatural) {
