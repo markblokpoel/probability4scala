@@ -145,7 +145,10 @@ case class ConditionalDistribution[A, B](domainV1: Set[A], domainV2: Set[B], dis
   def bayes(prior: Distribution[B]): ConditionalDistribution[B, A] = {
     val newDistribution: Set[((B, A), BigNatural)] = domainV2.flatMap(condition => {
       domainV1.map(value => {
-        (condition, value) -> pr(value | condition) * prior.pr(condition) / prConditional(condition)
+        val numerator = pr(value | condition) * prior.pr(condition)
+        val denominator = prConditional(condition)
+        if(denominator == 0) (condition, value) -> BigNatural(0)
+        else (condition, value) -> numerator / denominator
       })
     })
     ConditionalDistribution(domainV2, domainV1, newDistribution.toMap)

@@ -153,7 +153,10 @@ class BigNatural(val dec: BigDecimal, val isPositiveInfinite: Boolean = false, v
     else if(isNegativeInfinite) false
     else dec.equals(that.dec)
 
-  override def equals(that: Any): Boolean = this.equals(that)
+  override def equals(that: Any): Boolean = that match {
+    case natural: BigNatural => this.equals(natural)
+    case _ => false
+  }
 
   def floatValue(): Float =
     if(isPositiveInfinite) Float.PositiveInfinity
