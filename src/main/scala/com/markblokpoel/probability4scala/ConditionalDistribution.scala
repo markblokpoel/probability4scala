@@ -28,7 +28,11 @@ case class ConditionalDistribution[A, B](domainV1: Set[A], domainV2: Set[B], dis
    * @param conditional
    * @return
    */
-  def pr(conditional: B): Distribution[A] = this * domainV2.singleValueDistribution(conditional) / prConditional(conditional)
+  def pr(conditional: B): Distribution[A] = {
+    val d = this * domainV2.singleValueDistribution(conditional)
+    if(d.sum == 0) d
+    else this * domainV2.singleValueDistribution(conditional) / prConditional(conditional)
+  }
 
   /**
    * Computes the probability for {{{V1=value}}} by marginalizing over all possible values of {{{V2}}}.
@@ -119,6 +123,16 @@ case class ConditionalDistribution[A, B](domainV1: Set[A], domainV2: Set[B], dis
     ConditionalDistribution(domainV1, domainV2, distribution.mapValues(_ / scalar))
   }
 
+  def /(other: Distribution[B]): ConditionalDistribution[A, B] = {
+    val divDistribution = (for(value1 <- domainV1; value2 <- domainV2) yield {
+      val nominator = distribution((value1, value2))
+      val denominator = other.distribution(value2)
+      if(nominator == 0) (value1, value2) -> 0.0.toBigNatural
+      else (value1, value2) -> (nominator / denominator)
+    }).toMap
+    ConditionalDistribution(domainV1, domainV2, divDistribution)
+  }
+
   def +(other: ConditionalDistribution[A, B]): ConditionalDistribution[A, B] = {
     val sumDistribution = (for(value1 <- domainV1; value2 <- domainV2) yield {
       (value1, value2) -> (distribution((value1, value2)) + other.distribution((value1, value2)))
@@ -138,7 +152,7 @@ case class ConditionalDistribution[A, B](domainV1: Set[A], domainV2: Set[B], dis
 
   /**
    * Computes the inverse distribution using Bayes' rule given a prior distribution over {{{V2}}}. The
-   * distribution is normalized using the marginal likelihood.
+   * distribution is not normalized.
    * @param prior
    * @return
    */
@@ -146,9 +160,9 @@ case class ConditionalDistribution[A, B](domainV1: Set[A], domainV2: Set[B], dis
     val newDistribution: Set[((B, A), BigNatural)] = domainV2.flatMap(condition => {
       domainV1.map(value => {
         val numerator = pr(value | condition) * prior.pr(condition)
-        val denominator = prConditional(condition)
-        if(denominator == 0) (condition, value) -> BigNatural(0)
-        else (condition, value) -> numerator / denominator
+//        val denominator = prConditional(condition)
+//        if(denominator == 0) (condition, value) -> BigNatural(0)
+        (condition, value) -> numerator// / denominator
       })
     })
     ConditionalDistribution(domainV2, domainV1, newDistribution.toMap)
@@ -188,6 +202,38 @@ case class ConditionalDistribution[A, B](domainV1: Set[A], domainV2: Set[B], dis
    *      [[https://en.wikipedia.org/wiki/Softmax_function]].
    */
   def softmax(beta: BigNatural): ConditionalDistribution[A, B] = (this.log * beta).exp / (this.log * beta).exp.sum
+
+  /**
+   * Returns the softmaxed distribution
+   *
+   * @param beta The beta parameter
+   * @param costs The cost function as distribution (doesn't have to be normalized)
+   * @return A value in the domain of distribution
+   * @see See this Wikipedia page for a mathmatical definition of soft argmax
+   *      [[https://en.wikipedia.org/wiki/Softmax_function]].
+   */
+  def softmax(beta: BigNatural, costs: Distribution[A]): ConditionalDistribution[A, B] = {
+    val softened = (this.log * beta -- costs).exp
+//    println("soft")
+//    println(softened.distribution)
+//    for(v <- domainV1; c <- domainV2)
+//     println(v + "|" + c + " = " + softened.pr(v | c))
+
+//    val norm = (for(c <- domainV2) yield {
+//      (c -> softened.pr(c).sum)
+//    }).toMap
+
+    val norm = softened.distribution.values.fold(0.toBigNatural)(_ + _)
+
+//    println("norm")
+//    println(norm)
+
+    val newDistr = (for(v <- domainV1; c <- domainV2) yield {
+      (v, c) -> softened.pr(v | c) / norm
+    }).toMap
+
+    ConditionalDistribution(domainV1, domainV2, newDistr)
+  }
 
   /** Prints the distribution as a conditional probability table. */
   def cpt(): Unit = {

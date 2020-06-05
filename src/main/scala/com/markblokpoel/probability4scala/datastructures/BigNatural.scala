@@ -62,7 +62,7 @@ class BigNatural(val dec: BigDecimal, val isPositiveInfinite: Boolean = false, v
   def -(that: Double): BigNatural = this - new BigNatural(that)
 
   def /(that: BigNatural): BigNatural =
-    if(isInfinite) this
+    if(isInfinite || dec == 0) this
     else new BigNatural(dec / that.dec, false, false)
 
   def /(that: Double): BigNatural = this / new BigNatural(that)
