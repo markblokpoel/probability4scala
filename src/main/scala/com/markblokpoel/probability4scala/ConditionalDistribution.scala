@@ -201,7 +201,8 @@ case class ConditionalDistribution[A, B](domainV1: Set[A], domainV2: Set[B], dis
    * @see See this Wikipedia page for a mathmatical definition of soft argmax
    *      [[https://en.wikipedia.org/wiki/Softmax_function]].
    */
-  def softmax(beta: BigNatural): ConditionalDistribution[A, B] = (this.log * beta).exp / (this.log * beta).exp.sum
+  def softmax(beta: BigNatural): ConditionalDistribution[A, B] =
+    softmax(beta, domainV1.nilDistribution)
 
   /**
    * Returns the softmaxed distribution

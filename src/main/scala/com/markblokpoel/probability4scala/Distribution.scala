@@ -107,15 +107,27 @@ case class Distribution[A](domain: Set[A], distribution: Map[A, BigNatural]) {
 
   def log: Distribution[A] = Distribution(domain, distribution.mapValues(_.log))
 
+  def softmax(beta: BigNatural): Distribution[A] = softmax(beta, domain.nilDistribution)
+
   /**
    * Returns the softmaxed distribution
    *
    * @param beta The beta parameter
+   * @param costs The cost function as distribution (doesn't have to be normalized)
    * @return A value in the domain of distribution
    * @see See this Wikipedia page for a mathmatical definition of soft argmax
    *      [[https://en.wikipedia.org/wiki/Softmax_function]].
    */
-  def softmax(beta: BigNatural): Distribution[A] = (this.log * beta).exp / (this.log * beta).exp.sum
+  def softmax(beta: BigNatural, costs: Distribution[A]): Distribution[A] = {
+    val softened = (this.log * beta - costs).exp
+    val norm = softened.distribution.values.fold(0.toBigNatural)(_ + _)
+
+    val newDistr = (for(v <- domain) yield {
+      (v) -> softened.pr(v) / norm
+    }).toMap
+
+    Distribution(domain, newDistr)
+  }
 
   /** Returns the Shannon information entropy of this distribution.
    *

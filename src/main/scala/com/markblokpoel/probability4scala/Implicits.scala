@@ -16,6 +16,15 @@ object Implicits {
     }
 
     /**
+     * Constructs a distribution over the domain with all probabilities being zero.
+     * @return
+     */
+    def nilDistribution: Distribution[A] = {
+      val distribution = domain.map(value => value -> BigNatural(0.0)).toMap
+      Distribution(domain, distribution)
+    }
+
+    /**
      * Constructs a distribution over the domain where pr(a) = 1.0 if v == value and 0.0 otherwise.
      * @param value value in the domain to construct distribution for
      * @return
