@@ -40,11 +40,13 @@ class BigNatural(val dec: BigDecimal, val isPositiveInfinite: Boolean = false, v
     else if(isPositiveInfinite) this
     else new BigNatural(spire.math.pow(dec, that.dec), false, false)
 
-  private def fact(that: BigNatural): BigNatural =
-    if(isNegativeInfinite) new BigNatural(0, false, false)
-    else if(isPositiveInfinite) this
+  private def fact(that: BigNatural): BigNatural = {
+    require(that >= 0, "Factorial of negative numbers is undefined.")
+    if(that.isNegativeInfinite) new BigNatural(0, false, false)
+    else if(that.isPositiveInfinite) that
     else if(that == 0) new BigNatural(1, false, false)
     else that * fact(that-1)
+  }
 
   def fact: BigNatural = fact(this)
 

@@ -25,10 +25,26 @@ object Implicits {
       Distribution(domain, distribution)
     }
 
-//    def normalDistribution(mean: A, variance: BigNatural): Distribution[A] = {
-//      val orderedDomain = domain.toList.sorted
-//      Gaussian.double(1.0, 0.5)
-//    }
+    /**
+     * Constructs a binomial distribution over the domain, assuming an arbitrary ordering over the domain,
+     * then each entry in the domain is equivocated to a number of successes in the binomial distribution,
+     * where the success is p.
+     * @param p Probability for a success as used by the binomial distribution
+     * @return
+     */
+    def binomialDistribution(p: BigNatural): Distribution[A] = {
+      val orderedDomain = domain.toList
+      val distr = orderedDomain.indices
+        .map(i => {
+          val k = BigNatural(i.toDouble)
+          val n = BigNatural(domain.size - 1.0)
+          val bin = n.fact / (k.fact * (n - k).fact)
+          val ps = p.pow(k)
+          val pf = (BigNatural(1) - p).pow(n - k)
+          orderedDomain(i) -> bin * ps * pf
+        }).toMap
+      Distribution(domain, distr)
+    }
 
     /**
      * Constructs a distribution over the domain where pr(a) = 1.0 if v == value and 0.0 otherwise.
