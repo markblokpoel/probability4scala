@@ -1,6 +1,7 @@
 package com.markblokpoel.probability4scala
 
 import com.markblokpoel.probability4scala.datastructures.BigNatural
+//import spire.random._
 
 /** Implicit functions for more concise syntax. */
 object Implicits {
@@ -23,6 +24,11 @@ object Implicits {
       val distribution = domain.map(value => value -> BigNatural(0.0)).toMap
       Distribution(domain, distribution)
     }
+
+//    def normalDistribution(mean: A, variance: BigNatural): Distribution[A] = {
+//      val orderedDomain = domain.toList.sorted
+//      Gaussian.double(1.0, 0.5)
+//    }
 
     /**
      * Constructs a distribution over the domain where pr(a) = 1.0 if v == value and 0.0 otherwise.
@@ -88,6 +94,7 @@ object Implicits {
   implicit class ImplBigNatural(nat: BigNatural) {
     def log: BigNatural = nat.log
     def exp: BigNatural = nat.exp
+    def fact: BigNatural = nat.fact
   }
 
 }

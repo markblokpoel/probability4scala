@@ -35,7 +35,18 @@ class BigNatural(val dec: BigDecimal, val isPositiveInfinite: Boolean = false, v
     if(dec == 0) new BigNatural(0, false, true)
     else new BigNatural(bdt.log(dec), false, false)
 
-//  def pow(that: BigDecimalInf): BigDecimalInf = bdt.
+  def pow(that: BigNatural): BigNatural =
+    if(isNegativeInfinite) new BigNatural(0, false, false)
+    else if(isPositiveInfinite) this
+    else new BigNatural(spire.math.pow(dec, that.dec), false, false)
+
+  private def fact(that: BigNatural): BigNatural =
+    if(isNegativeInfinite) new BigNatural(0, false, false)
+    else if(isPositiveInfinite) this
+    else if(that == 0) new BigNatural(1, false, false)
+    else that * fact(that-1)
+
+  def fact: BigNatural = fact(this)
 
   def %(that: BigNatural): BigNatural =
     if(isInfinite) this
@@ -385,6 +396,8 @@ object BigNatural {
   def e: BigNatural = BigNatural(bdt.fromReal(Real.e))
 
   def pi: BigNatural = BigNatural(bdt.fromReal(Real.pi))
+
+  def fact(nat: BigNatural): BigNatural = nat.fact
 }
 
 
