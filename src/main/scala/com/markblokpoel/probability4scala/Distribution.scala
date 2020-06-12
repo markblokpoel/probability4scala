@@ -151,7 +151,9 @@ case class Distribution[A](domain: Set[A], distribution: Map[A, BigNatural]) {
     require(domain == that.domain, "KL-divergence requires equivalent domains.")
 
     domain.foldLeft(BigNatural(0.0))((kl: BigNatural, value: A) =>
-      kl + pr(value) * (pr(value) / that.pr(value)).log)
+      if(that.pr(value) == 0) kl
+      else kl + pr(value) * (pr(value) / that.pr(value)).log
+    )
   }
 
   /**
