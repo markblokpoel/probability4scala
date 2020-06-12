@@ -143,6 +143,18 @@ case class Distribution[A](domain: Set[A], distribution: Map[A, BigNatural]) {
   }
 
   /**
+   * Returns the Kullback-Leibler divergence from that to this.
+   * @param that Other distribution.
+   * @return
+   */
+  def klDivergence(that: Distribution[A]): BigNatural = {
+    require(domain == that.domain, "KL-divergence requires equivalent domains.")
+
+    domain.foldLeft(BigNatural(0.0))((kl: BigNatural, value: A) =>
+      kl + pr(value) * (pr(value) / that.pr(value)).log)
+  }
+
+  /**
    * @return The sum of the probabilities, i.e., the probability mass.
    */
   def sum: BigNatural = distribution.values.fold(BigNatural(0))((acc: BigNatural, p: BigNatural) => acc + p)
