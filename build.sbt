@@ -8,7 +8,7 @@ lazy val commonSettings = Seq(
   scalaVersion := "2.12.8",
   organization := s"com.markblokpoel",
   description := "This is an implementation of the core API for the Lanag agent-based simulation framework.",
-  crossScalaVersions := Seq("2.12.8","2.12.9","2.12.10"),
+  crossScalaVersions := Seq("2.12.8", "2.12.9", "2.12.10"),
   crossVersion := CrossVersion.binary,
 //  resolvers ++= Seq(
 //    "jitpack" at "https://jitpack.io"
@@ -20,7 +20,8 @@ lazy val commonSettings = Seq(
   // Compile options
   updateImpactOpenBrowser := false,
   compile in Compile := (compile in Compile).dependsOn(formatAll).value,
-  mainClass in assembly := Some("com.markblokpoel.probability4scala.DefaultMain"),
+  mainClass in assembly := Some(
+    "com.markblokpoel.probability4scala.DefaultMain"),
   test in Test := (test in Test).dependsOn(checkFormat).value,
   formatAll := {
     (scalafmt in Compile).value

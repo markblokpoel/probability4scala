@@ -2,19 +2,14 @@ package com.markblokpoel.probability4scala
 
 import com.markblokpoel.probability4scala.datastructures.BigNatural
 
-
 import com.markblokpoel.probability4scala.Implicits._
 import com.markblokpoel.probability4scala.DistributionHelpers._
-
-
 
 object Demo extends App {
 
   println(new BigNatural(0).log + 1)
 
   println(0.toBigNatural.log.exp)
-
-
 
   case class Ref(label: String)
 
@@ -62,8 +57,6 @@ object Demo extends App {
 
   val bla = exp(5 * log(cdistr))
   println(bla.cpt())
-
-
 //
 //  val p3 = prV1("monkey", cdistr) // this will marginalize over all possible conditional val
 //  println(s"pr(monkey) = sum_r pr(monkey|r) = $p3")
